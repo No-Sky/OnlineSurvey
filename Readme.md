@@ -26,11 +26,11 @@
 
 ### 前端模块
 
-[前端模块]: https://gitee.com/xfw_nosky/OnlineSurvey/tree/main/OnlineSurvey_frontEnd
+[前端模块]( https://gitee.com/xfw_nosky/OnlineSurvey/tree/main/OnlineSurvey_frontEnd)
 
 ### 后端模块
 
-[后端模块]: https://gitee.com/xfw_nosky/OnlineSurvey/tree/main/OnlineSurvey_backEnd
+[后端模块]( https://gitee.com/xfw_nosky/OnlineSurvey/tree/main/OnlineSurvey_backEnd)
 
 ## Future
 
