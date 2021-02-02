@@ -16,7 +16,7 @@
 
 ### 题目
 
-![题目ER图](./Readme.assets./题目ER图.png)
+![题目ER图](./Readme.assets/题目ER图.png)
 
 ### 选项
 
