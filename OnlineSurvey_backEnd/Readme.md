@@ -30,8 +30,6 @@
 
 ![回答ER图](./Readme.assets/回答ER图.png)
 
-## 
-
 ### 基础功能模块
 
 ```java
@@ -41,10 +39,10 @@
 public interface login(String email, String password);
 ```
 
+## Future
 
+### 邮箱模块
 
-### 邮件通知模块
+### 内容分析模块
 
-###  内容分析模块
-
-### 问卷推荐分发模块
+### 偏好问卷推荐模块

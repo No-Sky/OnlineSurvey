@@ -32,11 +32,7 @@
 
 [后端模块]( https://gitee.com/xfw_nosky/OnlineSurvey/tree/main/OnlineSurvey_backEnd)
 
-## Future
-
-### 邮箱模块
-
-### 偏好问卷推荐模块
+### 
 
 
 
