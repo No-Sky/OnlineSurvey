@@ -2,7 +2,9 @@
 
 ## 技术图谱
 
-使用框架：SpringBoot<version: >  Mybatis<version: >
+语言：JAVA1.8
+
+使用框架：SpringBoot<version: 2.4.2>  MybatisPlus<version: >
 
 数据库：MySQL<version: 5.7>
 
