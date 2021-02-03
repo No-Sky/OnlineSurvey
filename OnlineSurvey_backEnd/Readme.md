@@ -1,5 +1,13 @@
 # 后端模块
 
+## 技术图谱
+
+使用框架：SpringBoot<version: >  Mybatis<version: >
+
+数据库：MySQL<version: 5.7>
+
+应用服务器：Tomcat<version: 9.0.41>
+
 ## 基础功能E-R图
 
 ![基础功能ER图](./Readme.assets/基础功能ER图.png)
@@ -7,8 +15,6 @@
 ### 用户
 
 ![](./Readme.assets/用户ER图.png)
-
-
 
 ### 问卷
 
@@ -22,7 +28,7 @@
 
 ![选项ER图](./Readme.assets/选项ER图.png)
 
-###  提交信息
+### 提交信息
 
 ![提交信息ER图](./Readme.assets/提交信息ER图.png)
 
@@ -70,6 +76,7 @@ public interface UserServiceInterface {
     Result deleteUser(Integer userId);
 }
 ```
+
 ### 问卷接口类
 
 ```java
@@ -131,6 +138,7 @@ public interface AnswerServiceInterface {
     
 }
 ```
+
 ### 邮箱接口类
 
 ```java
