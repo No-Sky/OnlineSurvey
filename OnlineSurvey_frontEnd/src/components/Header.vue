@@ -6,16 +6,18 @@
     <el-container>
       <el-header>
         <div class="logo" @click="toIndex">
-          <!-- <img src="/static/images/logo.png" class="logoImg"> -->
-          <span style="color: #303133">问卷喵</span>
+          <img src="../assets/images/logo.png" class="logoImg">
+          <span style="color: #303133">问道问卷网</span>
           <span style="font-size: 13px;margin-left: 5px;color: #606266">——免费的在线问卷调查系统</span>
         </div>
         <div style="float: right;margin-right: 50px;line-height: 60px;">
+
           <!-- 未登录时显示 -->
           <template v-if="!showname">
             <el-button type="primary" plain style="font-size: 15px;" @click="toLogin">登录</el-button>
             <el-button plain style="font-size: 15px;" @click="toRegiste">注册</el-button>
           </template>
+
           <!-- 登录时显示 -->
           <template v-else>
             <!-- 登录成功，显示用户名 -->
@@ -30,6 +32,7 @@
               </el-dropdown-menu>
             </el-dropdown>
           </template>
+          
         </div>
       </el-header>
       <el-main style="padding: 0">

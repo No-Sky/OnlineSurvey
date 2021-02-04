@@ -3,6 +3,7 @@
 功能：对网站进行介绍
 -->
 <template>
+    <!-- 网站概述  -->
     <el-carousel height="500px">
       <el-carousel-item v-for="(item, index) in topImg" :key="index">
         <!--<div style="background-color: black;width: 100%;height: 100%;">-->
@@ -15,18 +16,15 @@
     </el-carousel>
     <!--<el-divider></el-divider>-->
 
+    <!-- demo展示 -->
     <code-div><img src="../assets/images/demo1.png" class="demoImg"/></code-div>
     <code-div><img src="../assets/images/demo2.png" class="demoImg"/></code-div>
     <code-div><img src="../assets/images/demo3.png" class="demoImg"/></code-div>
-    <!-- <img src="/static/images/demo1.png" class="demoImg" /><br /> -->
-    <!-- <img src="/static/images/demo2.png" class="demoImg" /><br />
-    <img src="/static/images/demo3.png" class="demoImg" /><br /><br /> -->
 
     <el-divider></el-divider>
     <el-footer class="bottom">
-      <p>Copyright © 2019 WjCat. All rights reserved.</p>
-      <p>问卷喵交流群：850804401</p>
-      <p>豫ICP备17008007号-2</p>
+      <p>Copyright © 2021 NoSKy. All rights reserved.</p>
+      <p>仅供学习交流使用</p>
     </el-footer>
 </template>
 <script>
