@@ -1,5 +1,5 @@
 # 创建数据库
-create database if not exists `onlinesurvey` set utf8 COLLATE utf8_general_ci;
+create database if not exists `onlinesurvey` default charset utf8 COLLATE utf8_general_ci;
 
 # 使用数据库
 use onlinesurvey;
@@ -14,16 +14,18 @@ create table `User` (
     `statusType` int(1) default 0
 );
 
+insert into `User` (`email`, `password`, `username`) values ('xfw_nosky@163.com', 'test123456', 'xfw');
+
 # 问卷
 drop table if exists `Questionnaire`;
 create table`Questionnaire` (
     `questionnaireId` int not null auto_increment primary key,
-    `userId`int,
+    `userId` int,
     `title` varchar(50),
     `description` varchar(200),
     `statusType` int(1) default 0,
-    `createTime` timestamp,
-    `stopTime` timestamp,
+    `createTime` datetime,
+    `stopTime` datetime,
     `distribution` int default 0,
     `deleteFlag` int(1) default 0
 );
@@ -55,7 +57,7 @@ create table `SubmitInfo` (
     `questionnaireId` int,
     `userId` int,
     `submitIP` varchar(50),
-    `submitTime` timestamp,
+    `submitTime` datetime,
     `useTime` int
 );
 
@@ -71,7 +73,3 @@ create table `Answer` (
     `answer` int,
     `answerText` varchar(100)
 );
-
-
-
-

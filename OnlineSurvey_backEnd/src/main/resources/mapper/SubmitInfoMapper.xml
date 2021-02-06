@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.xiaofangwei.onlinesurvey.mapper.SubmitInfoMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.xiaofangwei.onlinesurvey.entity.SubmitInfo">
+        <id column="submitId" property="submitId" />
+        <result column="questionnaireId" property="questionnaireId" />
+        <result column="userId" property="userId" />
+        <result column="submitIP" property="submitIP" />
+        <result column="submitTime" property="submitTime" />
+        <result column="useTime" property="useTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        submitId, questionnaireId, userId, submitIP, submitTime, useTime
+    </sql>
+
+</mapper>

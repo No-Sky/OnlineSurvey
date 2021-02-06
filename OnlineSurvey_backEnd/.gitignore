@@ -18,6 +18,8 @@ target/
 *.iws
 *.iml
 *.ipr
+/src/test/java/cn/xiaofangwei/onlinesurvey/JasyptTest.java
+/src/test/java/cn/xiaofangwei/onlinesurvey/CodeGenerator.java
 
 ### NetBeans ###
 /nbproject/private/
@@ -31,4 +33,5 @@ build/
 
 ### VS Code ###
 .vscode/
-/src/test/java/cn/xiaofangwei/onlinesurvey/JasyptTest.java
+
+
