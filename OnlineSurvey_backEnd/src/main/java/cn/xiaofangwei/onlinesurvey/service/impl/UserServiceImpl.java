@@ -32,6 +32,7 @@ class UserSericeImpl extends ServiceImpl<UserMapper, User> implements UserServic
         if (user != null) {
             if (user.getPassword().equals(password)) {
                 result.put("flag" ,true);
+                result.put("user", user);
             } else {
                 result.put("flag", false);
                 result.put("description", "请重试，密码错误！");
