@@ -3,6 +3,8 @@ package cn.xiaofangwei.onlinesurvey.service;
 import cn.xiaofangwei.onlinesurvey.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.Map;
+
 /**
  * <p>
  *  服务类
@@ -13,4 +15,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UserService extends IService<User> {
 
+    Map<String, Object> login(String email, String password);
 }

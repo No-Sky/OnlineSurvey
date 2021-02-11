@@ -16,4 +16,8 @@
         userId, email, password, username, statusType
     </sql>
 
+    <select id="selectByEmail" parameterType="String" resultMap="BaseResultMap">
+        select Base_Column_List from `User` where email = #{email}
+    </select>
+
 </mapper>
