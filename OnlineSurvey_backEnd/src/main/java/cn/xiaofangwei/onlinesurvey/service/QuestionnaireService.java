@@ -1,7 +1,12 @@
 package cn.xiaofangwei.onlinesurvey.service;
 
 import cn.xiaofangwei.onlinesurvey.entity.Questionnaire;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.Map;
 
 /**
  * <p>
@@ -13,4 +18,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface QuestionnaireService extends IService<Questionnaire> {
 
+    IPage<Map<String, Object>> selectMapsPage(Page questionnairePage, QueryWrapper wrapper);
 }

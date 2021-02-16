@@ -1,10 +1,17 @@
 package cn.xiaofangwei.onlinesurvey.service.impl;
 
 import cn.xiaofangwei.onlinesurvey.entity.Questionnaire;
+import cn.xiaofangwei.onlinesurvey.mapper.QuestionMapper;
 import cn.xiaofangwei.onlinesurvey.mapper.QuestionnaireMapper;
 import cn.xiaofangwei.onlinesurvey.service.QuestionnaireService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.Map;
 
 /**
  * <p>
@@ -17,4 +24,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Questionnaire> implements QuestionnaireService {
 
+    @Resource
+    QuestionMapper questionMapper;
+
+    @Override
+    public IPage<Map<String, Object>> selectMapsPage(Page questionnairePage, QueryWrapper wrapper) {
+        return questionMapper.selectMapsPage(questionnairePage, wrapper);
+    }
 }

@@ -44,7 +44,6 @@ public class Message {
         message.setDescription(description);
         return message;
     }
-
     public static Message info(String description, Object data) {
         Message message = new Message();
         message.setCode(1);
@@ -52,6 +51,12 @@ public class Message {
         message.setData(data);
         return message;
     }
+
+    public static Message info(Object data) {
+        return Message.info("请求成功", data);
+    }
+
+
 
 
 }

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * @author xiaofangwei
  * @since 2021-02-06
  */
-@Component
+
 public interface QuestionMapper extends BaseMapper<Question> {
 
 }

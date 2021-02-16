@@ -2,6 +2,7 @@ package cn.xiaofangwei.onlinesurvey.mapper;
 
 import cn.xiaofangwei.onlinesurvey.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
  * @author xiaofangwei
  * @since 2021-02-06
  */
-@Component
+
 public interface UserMapper extends BaseMapper<User> {
 
     User selectByEmail(String email);
