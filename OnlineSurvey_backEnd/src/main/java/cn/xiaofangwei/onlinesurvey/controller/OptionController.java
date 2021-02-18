@@ -36,7 +36,7 @@ public class OptionController {
         return Message.info(option);
     }
 
-    @GetMapping
+    @GetMapping("/question")
     public Message getOptionByQuestionId(@RequestParam("questionId")Integer questionId) {
         QueryWrapper<Option> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("questionId", questionId);

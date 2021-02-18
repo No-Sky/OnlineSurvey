@@ -32,6 +32,12 @@ public class WebExceptionHandler {
         return Message.error("对不起，请重试");
     }
 
+    @ExceptionHandler(SendEmailException.class)
+    public Message sendEmailException(SendEmailException e){
+        log.error("发送简单邮件时发生异常", e);
+        return Message.error("对不起，请重试");
+    }
+
     @ExceptionHandler
     public Message unknownException(Exception e) {
         log.error("发生了未知异常", e);

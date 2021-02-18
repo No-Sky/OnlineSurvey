@@ -2,11 +2,11 @@ package cn.xiaofangwei.onlinesurvey.controller;
 
 import cn.xiaofangwei.onlinesurvey.entity.Message;
 import cn.xiaofangwei.onlinesurvey.entity.User;
+import cn.xiaofangwei.onlinesurvey.exception.SendEmailException;
+import cn.xiaofangwei.onlinesurvey.service.MailService;
 import cn.xiaofangwei.onlinesurvey.service.UserService;
-import cn.xiaofangwei.onlinesurvey.utils.EMailUtils;
 import cn.xiaofangwei.onlinesurvey.utils.GenerateVertifyCode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
@@ -22,10 +22,12 @@ import java.util.TimerTask;
 public class BaseController {
 
     private final UserService userService;
+    private final MailService mailService;
 
     @Autowired
-    public BaseController(UserService userService) {
+    public BaseController(UserService userService, MailService mailService) {
         this.userService = userService;
+        this.mailService = mailService;
     }
 
     @PostMapping("/login")
@@ -33,7 +35,7 @@ public class BaseController {
                           HttpSession session) {
         Map<String,Object> result = userService.login(email, password);
         if ( (Boolean) result.get("flag") ) {
-            session.setAttribute("user", (User) result.get("user"));
+            session.setAttribute("user", result.get("user"));
             return Message.info("登录成功");
         }
         return Message.error((String) result.get("description"));
@@ -83,9 +85,9 @@ public class BaseController {
      * @return
      */
     @GetMapping("/sendvertify")
-    public Message sendVertifyCode(@RequestParam("email")String email, HttpSession session) {
+    public Message sendVertifyCode(@RequestParam("email")String email, HttpSession session) throws SendEmailException {
         String code = GenerateVertifyCode.generateVerifyCode(6);
-        EMailUtils.sendEmail(email, code);
+        mailService.sendEmail(email, code);
         session.setAttribute("vertifyCode", code);
         removeAttrbute(session, "vertifyCode");
         return Message.info();

@@ -2,8 +2,6 @@ package cn.xiaofangwei.onlinesurvey.mapper;
 
 import cn.xiaofangwei.onlinesurvey.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
-import org.springframework.stereotype.Component;
 
 /**
  * <p>

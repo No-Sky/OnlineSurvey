@@ -5,6 +5,7 @@ import cn.xiaofangwei.onlinesurvey.mapper.OptionMapper;
 import cn.xiaofangwei.onlinesurvey.service.OptionService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <p>
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
  * @since 2021-02-06
  */
 @Service
+@Transactional
 public class OptionServiceImpl extends ServiceImpl<OptionMapper, Option> implements OptionService {
 
 }
