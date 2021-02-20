@@ -85,7 +85,7 @@ import {
 //   ElInfiniteScroll,
   ElLoading,
   ElMessage,
-//   ElMessageBox,
+  ElMessageBox,
 //   ElNotification,
 } from 'element-plus';
 
@@ -178,7 +178,7 @@ const plugins = [
   // ElInfiniteScroll,
   ElLoading,
   ElMessage,
-  // ElMessageBox,
+  ElMessageBox,
   // ElNotification,
 ]
 

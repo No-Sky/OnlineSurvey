@@ -151,7 +151,7 @@
 <style scoped>
   /* 页面样式 */
   .rpw{
-    position: absolute;
+    position: fixed;
     width:100%;
     height:100%;
     background-color: #E4E7ED;

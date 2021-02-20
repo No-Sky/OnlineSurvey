@@ -9,7 +9,7 @@
         <!--操作栏-->
         <div class="opera">
           <el-tooltip class="item" effect="dark" content="创建问卷" placement="bottom">
-            <el-button icon="el-icon-plus" type="text" class="rightButton" @click="addWjButtonClick"></el-button>
+            <el-button icon="el-icon-plus" type="text" class="rightButton" @click="addQuestionnaireBtn"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="编辑问卷" placement="bottom">
             <el-button icon="el-icon-edit" type="text" class="rightButton" @click="editWj" :disabled="nowSelect.id==0||nowSelect.id==null"></el-button>
@@ -61,13 +61,13 @@
               <!--内容区域-->
               <div class="content">
                 <div v-show="nowSelect.id==0||nowSelect.id==null">请先选择问卷</div>
-                <design ref="design" v-show="nowSelect.id!=0&&nowSelect.id!=null"></design>
+                <design ref="designRef" v-show="nowSelect.id!=0&&nowSelect.id!=null"></design>
               </div>
             </el-tab-pane>
             <el-tab-pane label="回答统计" name="hdtj">
               <div class="content" ref="pdf">
                 <div v-show="nowSelect.id==0||nowSelect.id==null">请先选择问卷</div>
-                <data-show ref="dataShow" v-show="nowSelect.id!=0&&nowSelect.id!=null"></data-show>
+                <data-show ref="dataShowRef" v-show="nowSelect.id!=0&&nowSelect.id!=null"></data-show>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -133,365 +133,387 @@
   </div>
 </template>
 <script>
-  import {designOpera} from './api'
-  import Design from './Design.vue'
-  import DataShow from './DataShow.vue'
-  // import QRCode from 'qrcode'
-  export default{
-    components:{
-      Design,
-      // QRCode,
-      DataShow,
-    },
-    data(){
-      return{
-        defaultActive:1,//当前激活菜单
-        activeName:'wjsj',//标签页当前选择项
-        wjList:[],//问卷列表
-        loading:false,//是否显示加载中
-        dialogShow:false,//添加问卷弹窗是否显示
-        shareDialogShow:false,//分享问卷弹窗是否显示
-        tempDialog:false,//模板库弹窗是否显示
-//        nowTempData:[],//当前模板库页码
-        tempData:[],
-        tempDataCount:0,
-        tempLoading:false,
-        tempSearchText:'',
-        willAddWj:{
-          id:0,
-          title:'',
-          flag:0,
-          desc:'感谢您能抽时间参与本次问卷，您的意见和建议就是我们前行的动力！',
-        },
-        shareInfo:{
-          url:'',
-        },
-
-      }
-    },
-    mounted(){
-      this.logincheck();
-
-    },
-    computed:{
-      //现在选中的问卷信息
-      nowSelect(){
-        console.log('nowSelect update');
-        let now=this.wjList[this.defaultActive-1];
-        if(this.wjList.length==0){
-          return {
-            id:null,
-            title:null,
-            desc:null,
-            status:null
-          }
-        }
-        return{
-          id:now.id,
-          title:now.title,
-          desc:now.desc,
-          status:now.status
-        }
-      },
-    },
-    methods:{
-      addTemp(){
-        designOpera({
-          opera_type:'add_temp',
-          wjId:107,
-        })
-          .then(data=>{
-            console.log(data);
-          })
-      },
-      //使用问卷
-      useTemp(item){
-        this.tempLoading=true;
-        designOpera({
-          opera_type:'use_temp',
-          wjId:item.tempid,
-        })
-          .then(data=>{
-            console.log(data);
-            this.tempLoading=false;
-            this.$message({
-              type: 'success',
-              message: '使用模板成功！',
-              showClose: true
-            });
-            this.tempDialog=false;
-            this.dialogShow=false;
-            this.getWjList();
-
-          })
-      },
-      //打开问卷库
-      openTemp(){
-        this.tempDialog=true;
-        this.changeTempPage(1);
-//        this.getTempWjList();
-      },
-      //改变模板库页码
-      changeTempPage(page){
-        this.tempLoading=true;
-        designOpera({
-          opera_type:'get_temp_wj_list',
-          page:page
-        })
-          .then(data=>{
-            console.log(data);
-            this.tempDataCount=data.count;
-            this.tempData=data.detail;
-            this.tempLoading=false;
-          })
-      },
-      //预览模板问卷
-      lookTempWj(item){
-        let url=window.location.origin+"/tempdisplay/"+item.tempid;//问卷链接
-        console.log(url);
-        window.open(url);
-      },
-      //检查登录是否过期
-      logincheck(){
-          designOpera({
-          opera_type:'logincheck',
-        })
-        .then(data=>{
-          console.log(data);
-          if(data.code==404){//如果返回的错误是404，跳转到登录页面
-            this.$message({
-              type: 'error',
-              message: '您还未登录，请登录',
-              showClose: true
-            });
-            this.$router.push({path:'/login'})
-          }
-          else{
-            this.getWjList();
-          }
-        })
-      },
-      //发布问卷/暂停问卷
-      pushWj(){
-        let status=1;
-        if(this.nowSelect.status==1)
-            status=0;
-        designOpera({
-          opera_type:'push_wj',
-          username:'test',
-          wjId:this.nowSelect.id,
-          status:status
-        })
-          .then(data=>{
-            console.log(data);
-            if(data.code==0){
-              this.$message({
-                type: 'success',
-                message: status==1?'问卷发布成功！':'问卷暂停成功！'
-              });
-              this.getWjList();
-            }
-            else{
-              this.$message({
-                type: 'error',
-                message: data.msg
-              });
-            }
-          })
-      },
-      //分享问卷
-      shareWj(){
-        if(this.nowSelect.status==0){//问卷未发布
-          this.$message({
-            type: 'error',
-            message: '请先发布问卷能分享！'
-          });
-          return;
-        }
-        this.shareInfo.url=window.location.origin+"/display/"+this.nowSelect.id;//问卷链接
-        this.shareDialogShow=true;
-      },
-      //生成二维码
-      makeQrcode(){
-        // let canvas=document.getElementById('canvas');
-        // QRCode.toCanvas(canvas,this.shareInfo.url);
-      },
-      //复制分享链接成功
-      copySuccess(e){
-        console.log(e);
-        this.$message({
-          type: 'success',
-          message: '已复制链接到剪切板'
-        });
-      },
-      //复制分享链接失败
-      copyError(e){
-        console.log(e);
-        this.$message({
-          type: 'error',
-          message: '复制失败'
-        });
-      },
-      //打开分享链接
-      openShareUrl(){
-        window.open(this.shareInfo.url);
-      },
-      //预览问卷
-      previewWj(){
-        let url=window.location.origin+"/display/"+this.nowSelect.id;//问卷链接
-        console.log(url);
-        window.open(url);
-      },
-      //编辑问卷
-      editWj(){
-        this.dialogShow=true;
-        this.willAddWj=this.nowSelect;
-      },
-      //添加问卷按钮点击
-      addWjButtonClick(){
-        this.dialogShow=true;
-        this.willAddWj={
-          id:0,
-          title:'',
-          flag:0,
-          desc:'感谢您能抽时间参与本次问卷，您的意见和建议就是我们前行的动力！',
+import {
+  getQuestionnaireList,
+  addQuestionnaire,
+  pushQuestionnaire,
+  deleteQuestionnaire,
+  getTempPage,
+} from "./api";
+import Design from "./Design.vue";
+import DataShow from "./DataShow.vue";
+import { computed, reactive, ref } from "vue";
+import { ElMessage } from "element-plus";
+import { ElMessageBox } from "element-plus";
+// import QRCode from 'qrcode'
+export default {
+  components: {
+    Design,
+    // QRCode,
+    DataShow,
+  },
+  setup() {
+    const designRef = ref();
+    const dataShowRef = ref();
+    const defaultActive = ref(1); //当前激活菜单
+    const activeName = ref("wjsj"); //标签页当前选择项
+    let wjList = reactive([]); //问卷列表
+    const loading = ref(false); //是否显示加载中
+    const dialogShow = ref(false); //添加问卷弹窗是否显示
+    const shareDialogShow = ref(false); //分享问卷弹窗是否显示
+    const tempDialog = ref(false); //模板库弹窗是否显示
+    const tempData = reactive([]);
+    const tempDataCount = ref(0);
+    const tempLoading = ref(false);
+    const tempSearchTest = ref("");
+    let willAddWj = reactive({
+      id: 0,
+      title: "",
+      flag: 0,
+      desc: "感谢您能抽时间参与本次问卷，您的意见和建议就是我们前行的动力！",
+    });
+    const shareInfo = reactive({
+      url: "",
+    });
+    const nowSelect = computed(() => {
+      console.log("nowSelect update");
+      let now = wjList[defaultActive.value - 1];
+      if (wjList.length == 0) {
+        return {
+          id: null,
+          title: null,
+          desc: null,
+          status: null,
         };
-      },
-      //添加问卷
-      addWj(){
-        if (this.willAddWj.title == ''){
-          this.$message({
-            type: 'error',
-            message: '标题不能为空'
-          });
-          return;
+      }
+      return {
+        id: now.id,
+        title: now.title,
+        desc: now.desc,
+        status: now.status,
+      };
+    });
+
+    const lookDetail = () => {
+      //初始化问卷内容
+      designRef.value.init(
+        nowSelect.value.id,
+        nowSelect.value.title,
+        nowSelect.value.desc
+      );
+      console.log("id=" + nowSelect.value.id);
+      dataShowRef.value.dataAnalysis(nowSelect.value.id);
+    };
+
+    const getWjList = () => {
+      this.loading = true;
+      getQuestionnaireList({
+        username: "test",
+      }).then((data) => {
+        console.log(data);
+        wjList = data.detail;
+        loading.value = false;
+        //获取当前选中问卷题目
+        lookDetail();
+      });
+    };
+
+    //展示添加问卷弹窗
+    const addQuestionnaireBtn = () => {
+      dialogShow.value = true;
+      willAddWj = {
+        id: 0,
+        title: "",
+        flag: 0,
+        desc: "感谢您能抽时间参与本次问卷，您的意见和建议就是我们前行的动力！",
+      };
+    };
+
+    //添加问卷
+    const addWj = () => {
+      if (willAddWj.title == "") {
+        ElMessage.error("标题不能为空");
+        return;
+      }
+      addQuestionnaire({
+        username: "test",
+        title: willAddWj.title,
+        id: willAddWj.id,
+        desc: willAddWj.desc,
+      }).then((data) => {
+        console.log(data);
+        if (data.code == 0) {
+          ElMessage.success("保存成功");
+          this.getWjList();
+        } else {
+          ElMessage.error(data.description);
         }
-        designOpera({
-          opera_type:'add_wj',
-          username:'test',
-          title:this.willAddWj.title,
-          id:this.willAddWj.id,
-          desc:this.willAddWj.desc,
-        })
-          .then(data=>{
-            console.log(data);
-            if(data.code==0){
-              this.$message({
-                type: 'success',
-                message: '保存成功!'
-              });
-              this.getWjList();
-            }
-            else{
-              this.$message({
-                type: 'error',
-                message: data.msg
-              });
-            }
-          });
-        this.dialogShow=false;
-        this.willAddWj.title='';
-      },
-      //获取问卷列表
-      getWjList(){
-        this.loading=true;
-        designOpera({
-          opera_type:'get_wj_list',
-          username:'test'
-        })
-          .then(data=>{
-            console.log(data);
-            this.wjList=data.data.detail;
-            this.loading=false;
-            //获取当前选中问卷题目
-            this.lookDetail();
-          })
-      },
-      //删除问卷
-      deleteWj(){
-        this.$confirm('确定删除'+this.nowSelect.title+'? 删除后不可恢复！', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.loading=true;
-          designOpera({
-          opera_type:'delete_wj',
-          username:'test',
-          id:this.nowSelect.id
-        })
-          .then(data=>{
-            console.log(data);
-            if(data.code==0){
-              this.$message({
-                type: 'success',
-                message: '删除成功!'
-              });
-              this.loading=false;
-              this.getWjList();
-              this.defaultActive=1;
-            }
-            else{
-              this.$message({
-                type: 'error',
-                message: data.msg
-              });
-            }
-          })
+      });
+      dialogShow.value = false;
+      willAddWj.title = "";
+    };
+
+    //发布问卷
+    const pushWj = () => {
+      let status = 1;
+      if (nowSelect.value.status == 1) status = 0;
+      pushQuestionnaire({
+        username: "test",
+        wjId: nowSelect.value.id,
+        status: status,
+      }).then((data) => {
+        console.log(data);
+        if (data.code == 0) {
+          ElMessage.success(status == 1 ? "问卷发布成功！" : "问卷暂停成功！");
+          getWjList();
+        } else {
+          ElMessage.error(data.description);
+        }
+      });
+    };
+
+    //分享问卷
+    const shareWj = () => {
+      if (nowSelect.value.status == 0) {
+        //问卷未发布
+        ElMessage.error("请先发布问卷能分享！");
+        shareInfo.url =
+          window.location.origin + "/display/" + nowSelect.value.id; //问卷链接
+        shareDialogShow.value = true;
+      }
+    };
+
+    //复制分享链接成功
+    const copySuccess = (e) => {
+      console.log(e);
+      ElMessage.success("复制分享链接成功");
+    };
+    //复制分享链接失败
+    const copyError = (e) => {
+      console.log(e);
+      ElMessage.error("复制失败");
+    };
+
+    //打开分享链接
+    const openShareUrl = () => {
+      window.open(shareInfo.url);
+    };
+
+    // 编辑问卷
+    const editWj = () => {
+      dialogShow.value = true;
+      willAddWj = this.nowSelect;
+    };
+
+    //删除问卷
+    const deleteWj = () => {
+      ElMessageBox.confirm(
+        "确定删除" + this.nowSelect.title + "? 删除后不可恢复！",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).then(() => {
+        loading.value = true;
+        deleteQuestionnaire({
+          opera_type: "delete_wj",
+          username: "test",
+          id: this.nowSelect.id,
+        }).then((data) => {
+          console.log(data);
+          if (data.code == 0) {
+            ElMessage.success("删除成功");
+            loading.value = false;
+            getWjList();
+            defaultActive.value = 1;
+          } else {
+            ElMessage.error(data.description);
+          }
         });
-      },
-      //问卷点击
-      wjClick(id,index){
-        this.defaultActive=(index+1).toString();
-        this.lookDetail();
-      },
-      //查看问卷详情
-      lookDetail(){
-        this.$refs.design.init(this.nowSelect.id,this.nowSelect.title,this.nowSelect.desc);
-        console.log("id=")
-        console.log(this.nowSelect.id)
-        this.$refs.dataShow.dataAnalysis(this.nowSelect.id);
-      },
-    }
-  }
+      });
+    };
+
+    //预览问卷
+    const previewWj = () => {
+      let url = window.location.origin + "/display/" + nowSelect.value.id; //问卷链接
+      console.log(url);
+      window.open(url);
+    };
+
+    //生成二维码
+    const makeQrcode = () => {
+      // let canvas=document.getElementById('canvas');
+      // QRCode.toCanvas(canvas, shareInfo.url);
+    };
+
+	//改变模板库页码
+	const changeTempPage = (page) => {
+		this.tempLoading=true;
+		getTempPage({
+		opera_type:'get_temp_wj_list',
+		page:page
+		})
+		.then(data=>{
+			console.log(data);
+			tempDataCount.value =data.count;
+			tempData.value = data.detail;
+			tempLoading.value = false;
+		})
+	}
+
+    //打开问卷库
+    const openTemp = () => {
+      tempDialog.value = true;
+      changeTempPage(1);
+      //   this.getTempWjList();
+    };
+
+
+    return {
+      designRef,
+      dataShowRef,
+      defaultActive,
+      activeName,
+      wjList,
+      loading,
+      dialogShow,
+      shareDialogShow,
+      tempDialog,
+      tempData,
+      tempDataCount,
+      tempLoading,
+      tempSearchTest,
+      willAddWj,
+      nowSelect,
+      addQuestionnaireBtn,
+      lookDetail,
+      getWjList,
+      addWj,
+      pushWj,
+      shareWj,
+      copySuccess,
+      copyError,
+      openShareUrl,
+      editWj,
+      previewWj,
+      deleteWj,
+      makeQrcode,
+      openTemp,
+    };
+  },
+
+  //     mounted(){
+  //       this.logincheck();
+
+  //     },
+
+  //     methods:{
+  //       addTemp(){
+  //         designOpera({
+  //           opera_type:'add_temp',
+  //           wjId:107,
+  //         })
+  //           .then(data=>{
+  //             console.log(data);
+  //           })
+  //       },
+  //       //使用问卷
+  //       useTemp(item){
+  //         this.tempLoading=true;
+  //         designOpera({
+  //           opera_type:'use_temp',
+  //           wjId:item.tempid,
+  //         })
+  //           .then(data=>{
+  //             console.log(data);
+  //             this.tempLoading=false;
+  //             this.$message({
+  //               type: 'success',
+  //               message: '使用模板成功！',
+  //               showClose: true
+  //             });
+  //             this.tempDialog=false;
+  //             this.dialogShow=false;
+  //             this.getWjList();
+
+  //           })
+  //       },
+  //       /
+  //       
+  //       //预览模板问卷
+  //       lookTempWj(item){
+  //         let url=window.location.origin+"/tempdisplay/"+item.tempid;//问卷链接
+  //         console.log(url);
+  //         window.open(url);
+  //       },
+  //       //检查登录是否过期
+  //       logincheck(){
+  //           designOpera({
+  //           opera_type:'logincheck',
+  //         })
+  //         .then(data=>{
+  //           console.log(data);
+  //           if(data.code==404){//如果返回的错误是404，跳转到登录页面
+  //             this.$message({
+  //               type: 'error',
+  //               message: '您还未登录，请登录',
+  //               showClose: true
+  //             });
+  //             this.$router.push({path:'/login'})
+  //           }
+  //           else{
+  //             this.getWjList();
+  //           }
+  //         })
+  //       },
+  //       //问卷点击
+  //       wjClick(id,index){
+  //         this.defaultActive=(index+1).toString();
+  //         this.lookDetail();
+  //       },
+  //     }
+};
 </script>
 <style scoped>
-  .home{
-    position: absolute;
-    width: 100%;
-    height: calc(100vh - 100px);
-    text-align: left;
-
-  }
-  .home .badgeItem{
-    margin-top: 40px;
-  }
-  .content{
-    padding: 20px;
-    padding-right: 50px;
-    height: calc(100vh - 175px);
-    text-align: center;
-    overflow-y: scroll;
-    overflow-x: hidden;
-  }
-  .menu{
-    background-color: white;
-    height: calc(100vh - 100px);
-    overflow-x: scroll;
-    overflow-y: scroll;
-    left: 0;
-  }
-  .home .opera{
-    position: relative;
-    background-color: #fafafa;
-    text-align: center;
-    height: 40px;
-  }
-  .home .rightButton{
-    font-size: 16px;
-  }
-  .home .addWjDiv{
-    height: 50px;line-height: 50px;text-align: center;
-    border-bottom: 1px solid #eee
-  }
+.home {
+  position: absolute;
+  width: 100%;
+  height: calc(100vh - 100px);
+  text-align: left;
+}
+.home .badgeItem {
+  margin-top: 40px;
+}
+.content {
+  padding: 20px;
+  padding-right: 50px;
+  height: calc(100vh - 175px);
+  text-align: center;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+.menu {
+  background-color: white;
+  height: calc(100vh - 100px);
+  overflow-x: scroll;
+  overflow-y: scroll;
+  left: 0;
+}
+.home .opera {
+  position: relative;
+  background-color: #fafafa;
+  text-align: center;
+  height: 40px;
+}
+.home .rightButton {
+  font-size: 16px;
+}
+.home .addWjDiv {
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+}
 </style>

@@ -10,6 +10,7 @@
           <span style="color: #303133">问道问卷网</span>
           <span style="font-size: 13px;margin-left: 5px;color: #606266">——免费的在线问卷调查系统</span>
         </div>
+
         <div style="float: right;margin-right: 50px;line-height: 60px;">
 
           <!-- 未登录时显示 -->
@@ -20,17 +21,17 @@
 
           <!-- 登录时显示 -->
           <template v-else>
-            <!-- 登录成功，显示用户名 -->
-            <el-dropdown trigger="click" @command="handleCommand">
-              <span class="el-dropdown-link">
-                {{username}}<i class="el-icon-arrow-down el-icon--right"></i>
-              </span>
-              <!-- 退出登录 -->
-              <el-dropdown-menu v-slot: dropdown>
-                <el-dropdown-item command="a">问卷管理</el-dropdown-item>
-                <el-dropdown-item command="b">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
+              <el-dropdown trigger="click" @command="handleCommand">
+                <span class="el-dropdown-link">
+                  {{username}}<i class="el-icon-arrow-down el-icon--right"></i>
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="a">问卷管理</el-dropdown-item>
+                  <el-dropdown-item command="b">退出登录</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
           </template>
           
         </div>
@@ -41,96 +42,139 @@
     </el-container>
 </template>
 <script>
-  import {designOpera} from './api'
+  // import {designOpera} from './api'
+  import {useRouter} from 'vue-router'
+  import {ref} from 'vue'
   export default {
     name: 'Base',
-    data: function () {
-      return {
-        showname: false, //登录，注册按钮的显示状态
-        username:''  //用户名
+    setup(){
+      const showname = ref(false)
+      const username = ref("test")
+      const router = useRouter()
+      const toIndex = () => { router.push("/") }
+      const toLogin = () => { router.push("/login") }
+      const toRegiste = () => { router.push("/register") }
+      const toManage = () => { router.push("/manage") }
+      const exit = () => {
+        console.log("exit()")
+        localStorage.removeItem("Flag")
+        localStorage.removeItem("User_Data")
+        router.push("/test")
       }
-    },
-    methods:{
-      toIndex(){
-        this.$router.push({path:'/'});
-      },
-      //检查登录是否过期
-      logincheck(){
-          designOpera({
-          opera_type:'logincheck',
-        })
-        .then(data=>{
-          console.log(data);
-          if(data.code==404){
-            return false
-          }
-          else if(data.data!=null){
-            console.log(data)
-            sessionStorage.setItem('username',data.data.user) //将后端传的username存入session
-          }
-          this.state()  // 调用state方法
-        })
-      },
-      // 跳转问卷管理页面方法
-      toHome(){
-        this.$router.push({path:'/manage'})
-      },
-      // 跳转登录页面方法
-      toLogin(){
-        this.$router.push({path:'/login'})
-      },
-      // 跳转注册页面方法
-      toRegiste(){
-        this.$router.push({path:'/register'})
-      },
+      const handleCommand = (command) => {
+        if(command=='a'){
+          toManage();
+        }
+        else if(command=='b'){
+          exit();
+        }
+      }
       //判断session中是否存在数据，存在将showname置为true，否则false
-      state(){
+      const state = ()=> {
+        let username_session = sessionStorage.getItem('User_Data')
         console.log('state')
         console.log(sessionStorage.getItem('username'))
         if(sessionStorage.getItem('username')!=null){
-          this.showname=true;
-          this.username = sessionStorage.getItem('username')
+          showname.value =true;
+          username.value = username_session
         }
         else {
-          this.showname = false
+          showname.value = false
         }
-      },
-      //下拉菜单操作
-      handleCommand(command){
-        if(command=='a'){
-          this.toHome();
-        }
-        else if(command=='b'){
-          this.exit();
-        }
-      },
-      //登出
-      exit(command){
-        designOpera({
-          opera_type:'exit',  // 操作类型
-          username:sessionStorage.getItem('username')  //获取session中的用户名
-        })
-        .then(data=>{
-          console.log(data);
-          if(data.code==0){
-            sessionStorage.clear()  //登出成功，清空session
-            this.state()  // 调用state方法
-            this.toLogin()  // 调用toLogin方法
-          }
-          else{
-            this.$message({  // 报错友好提示
-              type: 'error',
-              message: '网络错误！',
-              showClose: true
-            });
-          }
-        })
       }
-    },
-    // 页面初始化
-    mounted(){
-      this.logincheck();
-    },
+      return {
+        showname, username,
+        toIndex, toLogin, toRegiste,
+        handleCommand,
+      }
+    }
+  //   data: function () {
+  //     return {
+  //       showname: false, //登录，注册按钮的显示状态
+  //       username:''  //用户名
+  //     }
+  //   },
+  //   methods:{
+  //     toIndex(){
+  //       this.$router.push({path:'/'});
+  //     },
+  //     //检查登录是否过期
+  //     logincheck(){
+  //         designOpera({
+  //         opera_type:'logincheck',
+  //       })
+  //       .then(data=>{
+  //         console.log(data);
+  //         if(data.code==404){
+  //           return false
+  //         }
+  //         else if(data.data!=null){
+  //           console.log(data)
+  //           sessionStorage.setItem('username',data.data.user) //将后端传的username存入session
+  //         }
+  //         this.state()  // 调用state方法
+  //       })
+  //     },
+  //     // 跳转问卷管理页面方法
+  //     toHome(){
+  //       this.$router.push({path:'/manage'})
+  //     },
+  //     // 跳转登录页面方法
+  //     toLogin(){
+  //       this.$router.push({path:'/login'})
+  //     },
+  //     // 跳转注册页面方法
+  //     toRegiste(){
+  //       this.$router.push({path:'/register'})
+  //     },
+  //     //判断session中是否存在数据，存在将showname置为true，否则false
+  //     state(){
+  //       console.log('state')
+  //       console.log(sessionStorage.getItem('username'))
+  //       if(sessionStorage.getItem('username')!=null){
+  //         this.showname=true;
+  //         this.username = sessionStorage.getItem('username')
+  //       }
+  //       else {
+  //         this.showname = false
+  //       }
+  //     },
+  //     //下拉菜单操作
+  //     handleCommand(command){
+  //       if(command=='a'){
+  //         this.toHome();
+  //       }
+  //       else if(command=='b'){
+  //         this.exit();
+  //       }
+  //     },
+  //     //登出
+  //     exit(command){
+  //       designOpera({
+  //         opera_type:'exit',  // 操作类型
+  //         username:sessionStorage.getItem('username')  //获取session中的用户名
+  //       })
+  //       .then(data=>{
+  //         console.log(data);
+  //         if(data.code==0){
+  //           sessionStorage.clear()  //登出成功，清空session
+  //           this.state()  // 调用state方法
+  //           this.toLogin()  // 调用toLogin方法
+  //         }
+  //         else{
+  //           this.$message({  // 报错友好提示
+  //             type: 'error',
+  //             message: '网络错误！',
+  //             showClose: true
+  //           });
+  //         }
+  //       })
+  //     }
+  //   },
+  //   // 页面初始化
+  //   mounted(){
+  //     this.logincheck();
+  //   },
   }
 </script>
 <style scoped>

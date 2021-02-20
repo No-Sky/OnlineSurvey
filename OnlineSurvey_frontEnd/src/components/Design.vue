@@ -108,240 +108,286 @@
   </div>
 </template>
 <script>
-  import {designOpera} from './api'
-  export default{
-    data(){
-      return{
-        loading:false,//页面加载中
-        dialogShow:false,
-        dialogTitle:'',
-        detail:[],
-        wjId:0,
-        title:'',
-        desc:'',
-        willAddQuestion:{
-          id:0,
-          type:'',
-          title:'',
-          options:[
-            {
-              title:'',//选项标题
-              id:0//选项id
-            }
-          ],
-          row:1,
-          must:false,//是否必填
+import { reactive, ref } from "vue";
+import { designOpera } from "./api";
+export default {
+  setup() {
+    const loading = ref(false);
+    const dialogShow = ref(false);
+    const dialogTitle = ref("");
+    const detail = reactive([]);
+    const wjId = ref(0);
+    const title = ref("");
+    const willAddQuestion = reactive({
+      id: 0,
+      type: "",
+      title: "",
+      options: [
+        {
+          title: "", //选项标题
+          id: 0, //选项id
         },
-        allType:[
-          {
-            value:'radio',
-            label:'单选题',
-          },
-          {
-            value:'checkbox',
-            label:'多选题',
-          },
-          {
-            value:'text',
-            label:'填空题',
-          },
-        ],
-      }
-    },
-    methods:{
-      //初始化问卷所有问题
-      init(wjId,title,desc){
-        this.wjId=wjId;
-        this.title=title;
-        this.desc=desc;
-        this.getQuestionList();
+      ],
+      row: 1,
+      must: false, //是否必填
+    });
+    const allType = reactive([
+      {
+        value: "radio",
+        label: "单选题",
       },
-      //获取问题列表(问卷内容)
-      getQuestionList(){
-        this.detail=[];
-        this.loading=true;
-        designOpera({
-          opera_type:'get_question_list',
-          username:'test',
-          wjId:this.wjId,
-        })
-          .then(data=>{
-            console.log(data);
-            this.detail=data.detail;
-            this.loading=false;
-          })
+      {
+        value: "checkbox",
+        label: "多选题",
       },
-      //点击添加问题按钮
-      addQuestion(){
-        if(this.wjId==0||this.wjId==null){
-          this.$message({
-            type: 'error',
-            message: '清先创建问卷!'
-          });
-          return;
-        }
-        this.dialogTitle='添加题目';
-        this.willAddQuestion={
-          id:0,
-          type:'',
-          title:'',
-          options:[
-            {
-              title:'',//选项标题
-              id:0//选项id
-            }
-          ],
-          row:1,
-          must:false,//是否必填
-        };
-        this.dialogShow=true;
+      {
+        value: "text",
+        label: "填空题",
       },
-      //删除问题
-      deleteQuestion(index){
-        this.$confirm('确定删除此题目?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          designOpera({
-            opera_type:'delete_question',
-            username:'test',
-            questionId:this.detail[index].id,
-          })
-            .then(data=>{
-              console.log(data);
-              if(data.code==0){
-                this.detail.splice(index,1);
-                this.$message({
-                  type: 'success',
-                  message: '删除成功!'
-                });
-              }
-              else{
-                this.$message({
-                  type: 'error',
-                  message: data.msg
-                });
-              }
-            })
-        });
+    ]);
 
-      },
-      //确认添加/保存题目
-      checkAddQuestion(){
-        //添加保存问题
-        let newItem={};//新添加的问题对象
-        newItem={
-          type:this.willAddQuestion.type,
-          title:this.willAddQuestion.title,
-          options:this.willAddQuestion.options,
-          row:this.willAddQuestion.row,
-          must:this.willAddQuestion.must,
-        };
-        newItem.radioValue=-1;
-        newItem.checkboxValue=[];
-        newItem.textValue='';
-        designOpera({
-          opera_type:'add_question',
-          username:'test',
-          wjId:this.wjId,
-          questionId:this.willAddQuestion.id,
-          title:this.willAddQuestion.title,
-          type:this.willAddQuestion.type,
-          options:this.willAddQuestion.options,
-          row:this.willAddQuestion.row,
-          must:this.willAddQuestion.must,
+    return {
+      loading,
+      dialogShow,
+      dialogTitle,
+      detail,
+      wjId,
+      title,
+      willAddQuestion,
+      allType,
+    };
+  },
+  // data(){
+  //   return{
+  //     loading:false,//页面加载中
+  //     dialogShow:false,
+  //     dialogTitle:'',
+  //     detail:[],
+  //     wjId:0,
+  //     title:'',
+  //     desc:'',
+  //     willAddQuestion:{
+  //       id:0,
+  //       type:'',
+  //       title:'',
+  //       options:[
+  //         {
+  //           title:'',//选项标题
+  //           id:0//选项id
+  //         }
+  //       ],
+  //       row:1,
+  //       must:false,//是否必填
+  //     },
+  //     allType:[
+  //       {
+  //         value:'radio',
+  //         label:'单选题',
+  //       },
+  //       {
+  //         value:'checkbox',
+  //         label:'多选题',
+  //       },
+  //       {
+  //         value:'text',
+  //         label:'填空题',
+  //       },
+  //     ],
+  //   }
+  // },
+  // methods:{
+  //   //初始化问卷所有问题
+  //   init(wjId,title,desc){
+  //     this.wjId=wjId;
+  //     this.title=title;
+  //     this.desc=desc;
+  //     this.getQuestionList();
+  //   },
+  //   //获取问题列表(问卷内容)
+  //   getQuestionList(){
+  //     this.detail=[];
+  //     this.loading=true;
+  //     designOpera({
+  //       opera_type:'get_question_list',
+  //       username:'test',
+  //       wjId:this.wjId,
+  //     })
+  //       .then(data=>{
+  //         console.log(data);
+  //         this.detail=data.detail;
+  //         this.loading=false;
+  //       })
+  //   },
+  //   //点击添加问题按钮
+  //   addQuestion(){
+  //     if(this.wjId==0||this.wjId==null){
+  //       this.$message({
+  //         type: 'error',
+  //         message: '清先创建问卷!'
+  //       });
+  //       return;
+  //     }
+  //     this.dialogTitle='添加题目';
+  //     this.willAddQuestion={
+  //       id:0,
+  //       type:'',
+  //       title:'',
+  //       options:[
+  //         {
+  //           title:'',//选项标题
+  //           id:0//选项id
+  //         }
+  //       ],
+  //       row:1,
+  //       must:false,//是否必填
+  //     };
+  //     this.dialogShow=true;
+  //   },
+  //   //删除问题
+  //   deleteQuestion(index){
+  //     this.$confirm('确定删除此题目?', '提示', {
+  //       confirmButtonText: '确定',
+  //       cancelButtonText: '取消',
+  //       type: 'warning'
+  //     }).then(() => {
+  //       designOpera({
+  //         opera_type:'delete_question',
+  //         username:'test',
+  //         questionId:this.detail[index].id,
+  //       })
+  //         .then(data=>{
+  //           console.log(data);
+  //           if(data.code==0){
+  //             this.detail.splice(index,1);
+  //             this.$message({
+  //               type: 'success',
+  //               message: '删除成功!'
+  //             });
+  //           }
+  //           else{
+  //             this.$message({
+  //               type: 'error',
+  //               message: data.msg
+  //             });
+  //           }
+  //         })
+  //     });
 
-        })
-          .then(data=>{
-            console.log(data);
-            newItem.id=data.id;
-            if(data.code==0){
-              this.dialogShow=false;
-              this.$message({
-                type: 'success',
-                message: '保存成功!'
-              });
-              this.getQuestionList();
-            }
-            else{
-              this.dialogShow=false;
-              this.$message({
-                type: 'error',
-                message: data.msg
-              });
-            }
-            this.willAddQuestion={
-              id:0,
-              type:'',
-              title:'',
-              options:[''],
-              row:1,
-              must:false,
-            };
-          });
-      },
-      //点击编辑问题按钮
-      editorQuestion(item){
-        this.willAddQuestion.title=item.title;
-        this.willAddQuestion.type=item.type;
-        this.willAddQuestion.options=JSON.parse(JSON.stringify(item.options));
-        this.willAddQuestion.text=item.text;
-        this.willAddQuestion.row=item.row;
-        this.willAddQuestion.must=item.must;
-        this.willAddQuestion.id=item.id;
-        this.dialogTitle='编辑问题';
-        this.dialogShow=true;
-      },
-      //添加选项
-      addOption(){
-        this.willAddQuestion.options.push({
-          title:'',
-          id:0,
-        });
-      },
-      //删除选项
-      deleteOption(index){
-        this.willAddQuestion.options.splice(index,1);
-      },
-      //切换问题类型
-      typeChange(value){
-        console.log(value);
-        this.willAddQuestion.type=value;
-        this.willAddQuestion.text='';
-        this.row=1;
-      },
-    }
-  }
+  //   },
+  //   //确认添加/保存题目
+  //   checkAddQuestion(){
+  //     //添加保存问题
+  //     let newItem={};//新添加的问题对象
+  //     newItem={
+  //       type:this.willAddQuestion.type,
+  //       title:this.willAddQuestion.title,
+  //       options:this.willAddQuestion.options,
+  //       row:this.willAddQuestion.row,
+  //       must:this.willAddQuestion.must,
+  //     };
+  //     newItem.radioValue=-1;
+  //     newItem.checkboxValue=[];
+  //     newItem.textValue='';
+  //     designOpera({
+  //       opera_type:'add_question',
+  //       username:'test',
+  //       wjId:this.wjId,
+  //       questionId:this.willAddQuestion.id,
+  //       title:this.willAddQuestion.title,
+  //       type:this.willAddQuestion.type,
+  //       options:this.willAddQuestion.options,
+  //       row:this.willAddQuestion.row,
+  //       must:this.willAddQuestion.must,
+
+  //     })
+  //       .then(data=>{
+  //         console.log(data);
+  //         newItem.id=data.id;
+  //         if(data.code==0){
+  //           this.dialogShow=false;
+  //           this.$message({
+  //             type: 'success',
+  //             message: '保存成功!'
+  //           });
+  //           this.getQuestionList();
+  //         }
+  //         else{
+  //           this.dialogShow=false;
+  //           this.$message({
+  //             type: 'error',
+  //             message: data.msg
+  //           });
+  //         }
+  //         this.willAddQuestion={
+  //           id:0,
+  //           type:'',
+  //           title:'',
+  //           options:[''],
+  //           row:1,
+  //           must:false,
+  //         };
+  //       });
+  //   },
+  //   //点击编辑问题按钮
+  //   editorQuestion(item){
+  //     this.willAddQuestion.title=item.title;
+  //     this.willAddQuestion.type=item.type;
+  //     this.willAddQuestion.options=JSON.parse(JSON.stringify(item.options));
+  //     this.willAddQuestion.text=item.text;
+  //     this.willAddQuestion.row=item.row;
+  //     this.willAddQuestion.must=item.must;
+  //     this.willAddQuestion.id=item.id;
+  //     this.dialogTitle='编辑问题';
+  //     this.dialogShow=true;
+  //   },
+  //   //添加选项
+  //   addOption(){
+  //     this.willAddQuestion.options.push({
+  //       title:'',
+  //       id:0,
+  //     });
+  //   },
+  //   //删除选项
+  //   deleteOption(index){
+  //     this.willAddQuestion.options.splice(index,1);
+  //   },
+  //   //切换问题类型
+  //   typeChange(value){
+  //     console.log(value);
+  //     this.willAddQuestion.type=value;
+  //     this.willAddQuestion.text='';
+  //     this.row=1;
+  //   },
+  // }
+};
 </script>
 <style scoped>
-  .Design{
-
-  }
-  .Design .dialog{
-    text-align: left;
-  }
-  .Design .questionTitle{
-    display: inline-block;
-    width: 80%;
-    font-size: 16px;
-    color: #303133;
-  }
-  .Design .addOptionButton{
-    display: inline-block;
-    margin-left: 80px;
-  }
-  .box-card{
-    width: 100%;
-    text-align: left;
-  }
-  .Design .top{
-    color: #606266;
-    margin-left: 20px;
-    padding: 0 10px 10px 10px;
-    border-bottom: 3px solid #409EFF;
-    font-size: 15px;
-    line-height: 22px;
-    text-align: left;
-  }
+.Design {
+}
+.Design .dialog {
+  text-align: left;
+}
+.Design .questionTitle {
+  display: inline-block;
+  width: 80%;
+  font-size: 16px;
+  color: #303133;
+}
+.Design .addOptionButton {
+  display: inline-block;
+  margin-left: 80px;
+}
+.box-card {
+  width: 100%;
+  text-align: left;
+}
+.Design .top {
+  color: #606266;
+  margin-left: 20px;
+  padding: 0 10px 10px 10px;
+  border-bottom: 3px solid #409eff;
+  font-size: 15px;
+  line-height: 22px;
+  text-align: left;
+}
 </style>
