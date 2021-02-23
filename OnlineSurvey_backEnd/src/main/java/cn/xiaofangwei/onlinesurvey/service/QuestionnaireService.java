@@ -19,4 +19,6 @@ import java.util.Map;
 public interface QuestionnaireService extends IService<Questionnaire> {
 
     IPage<Map<String, Object>> selectMapsPage(Page questionnairePage, QueryWrapper wrapper);
+
+    Questionnaire selectQuestionnaireWithQuestion(Integer questionnaireId);
 }

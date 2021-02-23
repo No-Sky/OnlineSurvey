@@ -4,8 +4,8 @@
  */
 
 import { createRouter, createWebHistory, useRoute } from 'vue-router'
-import {useStore} from 'vuex'
-import {ElMessage} from 'element-plus'
+import { useStore } from 'vuex'
+import { ElMessage } from 'element-plus'
 import Header from '@/components/Header.vue'
 import Index from '@/components/Index.vue'
 import Login from '@/components/Login.vue'
@@ -21,43 +21,67 @@ const routes = [
     path: '/',
     name: 'Base',
     component: Header,
-    children:[
+    children: [
       {
         path: '/',
         name: 'Index',
-        component: Index
+        component: Index,
+        meta: {
+          title: '问道问卷网'
+        }
       },
       {
         path: '/login',
         name: 'Login',
-        component: Login
+        component: Login,
+        meta: {
+          isLogin: false,
+          title: "登录————问道问卷网"
+        }
       },
       {
         path: '/register',
         name: 'Register',
-        component: Register
+        component: Register,
+        meta: {
+          isLogin: false,
+          title: '注册————问道问卷网'
+        }
       },
       {
         path: '/reset',
         name: 'ResetPass',
-        component: ResetPass
+        component: ResetPass,
+        meta: {
+          title: '重置密码————问道问卷网'
+        }
       },
       {
         path: '/manage',
         name: 'Manage',
-        component: Manage
+        component: Manage,
+        meta: {
+          isLogin: true,
+          title: "问卷管理————问道问卷网"
+        }
       },
     ]
   },
   {
     path: '/display/:id',
     name: 'Display',
-    component: Display
+    component: Display,
+    meta: {
+      title: '问卷填写————问道问卷网'
+    }
   },
   {
     path: '/thankyou',
     name: 'ThankYou',
-    component: ThankYou
+    component: ThankYou,
+    meta: {
+      title: '感谢填写————问道问卷网'
+    }
   },
 ]
 
@@ -68,40 +92,34 @@ const router = createRouter({
 
 
 router.beforeEach((to, from, next) => {
- 
+
+  // 路由发生变化修改页面title
+  if (to.meta.title) {
+    document.title = to.meta.title;
+  }
+  
   //获取用户登录成功后储存的登录标志
   let getFlag = sessionStorage.getItem("Flag");
-  let getid = sessionStorage.getItem("Userid");
+  let getUser = sessionStorage.getItem("User_Data");
   //如果登录标志存在且为isLogin，即用户已登录
-  if (getFlag === "isLogin"&&getid !== null) {
-
-      //设置vuex登录状态为已登录
-      const store = useStore()
-      store.state.isLogin = true;
-      next();
-
-      //如果已登录，还想想进入登录注册界面，则定向回首页
-      if (!to.meta.isLogin) {
-          ElMessage.warning("您已经登录，无需再登录")
-          next({
-              path: '/'
-          })
-      }
-
-      //如果登录标志不存在，即未登录
+  if (getFlag === "isLogin" && getUser !== null) {
+    // 如果已登录，还想进入登录注册界面，则定向回首页
+    if (to.meta.isLogin != null && !to.meta.isLogin) {
+      ElMessage.warning("您已经登录，无需再登录")
+      router.push("/")
+    }
+    //如果登录标志不存在，即未登录
   } else {
 
-      //用户想进入需要登录的页面，则定向回登录界面
-      if (to.meta.isLogin) {
-          next({
-              path: '/login',
-          })
-          //用户进入无需登录的界面，则跳转继续
-      } else {
-          next()
-      }
-
+    //用户想进入需要登录的页面，则定向回登录界面
+    if (to.meta.isLogin) {
+      ElMessage.warning("请先登录网站！")
+      router.push("/login")
+      //用户进入无需登录的界面，则跳转继续
+    } 
   }
+
+  next()
 
 });
 

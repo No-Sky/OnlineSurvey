@@ -19,7 +19,7 @@ export default createStore({
   //应用mmutations
   actions: {
     //获取登录状态
-    setUser({commit}, flag) {
+    userStatus ({commit}, flag) {
       commit('userStatus', flag)  
     }
   },

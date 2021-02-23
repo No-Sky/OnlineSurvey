@@ -7,6 +7,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.util.List;
+
 /**
  * <p>
  *  服务实现类
@@ -19,4 +22,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> implements QuestionService {
 
+    @Resource
+    QuestionMapper questionMapper;
+
+    @Override
+    public Question selectQuestionWithOptions(Integer questionId) {
+        return questionMapper.selectQuestionWithOptions(questionId);
+    }
+
+    @Override
+    public List<Question> selectQuestionsWithOptions(Integer questionnaireId) {
+        return questionMapper.selectQuestionsWithOptions(questionnaireId);
+    }
 }

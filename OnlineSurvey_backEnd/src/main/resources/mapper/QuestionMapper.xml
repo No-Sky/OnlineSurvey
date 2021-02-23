@@ -12,9 +12,37 @@
         <result column="row" property="row" />
     </resultMap>
 
+    <resultMap id="BaseResultMap_Options" type="cn.xiaofangwei.onlinesurvey.entity.Question">
+        <id column="questionId" property="questionId" />
+        <result column="questionnaireId" property="questionnaireId" />
+        <result column="questionTitle" property="questionTitle" />
+        <result column="questionType" property="questionType" />
+        <result column="required" property="required" />
+        <result column="row" property="row" />
+        <collection property="options" javaType="java.util.ArrayList" ofType="cn.xiaofangwei.onlinesurvey.entity.Option">
+            <id column="optionId" property="optionId" />
+            <result column="questionId" property="questionId" />
+            <result column="content" property="content" />
+        </collection>
+    </resultMap>
+
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         questionId, questionnaireId, questionTitle, questionType, required, row
     </sql>
+
+    <select id="selectQuestionWithOptions" resultMap="BaseResultMap_Options" parameterType="Integer">
+        select * from `Question`
+        left join `Option`
+        on `Question`.questionId = `Option`.questionId
+        where `Question`.questionId = #{questionId}
+    </select>
+
+    <select id="selectQuestionsWithOptions" resultMap="BaseResultMap_Options" parameterType="Integer">
+        select * from `Question`
+        left join `Option`
+        on `QuestionId`.questionId = `Option`.questionId
+        where `Question`.questionnaireId = #{questionnaireId}
+    </select>
 
 </mapper>

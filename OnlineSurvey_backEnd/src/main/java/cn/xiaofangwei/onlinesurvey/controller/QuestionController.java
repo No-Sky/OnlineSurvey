@@ -3,9 +3,9 @@ package cn.xiaofangwei.onlinesurvey.controller;
 
 import cn.xiaofangwei.onlinesurvey.entity.Message;
 import cn.xiaofangwei.onlinesurvey.entity.Question;
+import cn.xiaofangwei.onlinesurvey.service.OptionService;
 import cn.xiaofangwei.onlinesurvey.service.QuestionService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,29 +25,30 @@ import java.util.List;
 public class QuestionController {
 
     private final QuestionService questionService;
+    private final OptionService optionService;
 
     @Autowired
-    public QuestionController(QuestionService questionService) {
+    public QuestionController(QuestionService questionService, OptionService optionService) {
         this.questionService = questionService;
+        this.optionService = optionService;
     }
 
     @GetMapping
     public Message getQuestion(@RequestParam("questionId")Integer questionId) throws SQLException {
-        Question question = questionService.getById(questionId);
+        Question question = questionService.selectQuestionWithOptions(questionId);
         return Message.info(question);
     }
 
     @GetMapping("/list")
     public Message getQuestionListByQuestionnaireId(@RequestParam("questionnaireId")Integer questionnaireId) throws SQLException {
-        QueryWrapper<Question> questionQueryWrapper = new QueryWrapper<>();
-        questionQueryWrapper.eq("questionnaireId", questionnaireId);
-        List<Object> questions = questionService.listObjs(questionQueryWrapper);
+        List<Question> questions = questionService.selectQuestionsWithOptions(questionnaireId);
         return Message.info(questions);
     }
 
     @PostMapping
     public Message saveQuestion(Question question) throws SQLException {
-        questionService.save(question);
+        questionService.saveOrUpdate(question);
+        optionService.saveOrUpdateBatch(question.getOptions());
         return Message.info();
     }
 
@@ -58,7 +59,7 @@ public class QuestionController {
     }
 
     @DeleteMapping
-    public Message deleteQuestion(@RequestParam("questionId")Integer questionId) {
+    public Message deleteQuestion(@RequestParam("questionId")Integer questionId) throws SQLException {
         questionService.removeById(questionId);
         return Message.info();
     }

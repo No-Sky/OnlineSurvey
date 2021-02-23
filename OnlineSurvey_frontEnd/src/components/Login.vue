@@ -10,7 +10,7 @@
         <!-- 登录表单 -->
         <el-form ref="loginFormRef" :rules="rules" :model="loginForm">
             <el-form-item prop="email">
-                <el-input @keyup.enter="login('loginForm')" icon="el-icon-search" placeholder="请输入用户名" v-model="loginForm.email">
+                <el-input @keyup.enter="login('loginForm')" icon="el-icon-search" placeholder="请输入邮箱" v-model="loginForm.email">
                   <i class="el-icon-user" slot: prefix> </i>
                 </el-input>
             </el-form-item>
@@ -39,6 +39,7 @@ import { login } from "./api";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
+import qs from 'qs';
 
 export default {
   name: "Login",
@@ -53,8 +54,12 @@ export default {
     const rules = ref({
       //表单验证（邮箱验证规则）
       email: [
-        { required: true, message: "账号不能为空", trigger: "blur" },
-        { max: 30, message: "账号长度最长30位", trigger: "blur" },
+        { required: true, message: "邮箱不能为空", trigger: "blur" },
+        {
+          pattern: /^[0-9a-zA-Z_\\.-]+[@][0-9a-zA-Z_\\.-]+([\\.][a-zA-Z]+){1,2}$/,
+          message: "不是正确的邮箱",
+          trigger: "blur",
+        },
       ],
       //表单验证（密码验证规则）
       password: [
@@ -64,26 +69,25 @@ export default {
     });
     const loginBtn = (formName) => {
       let loginData = {
-        email: formName.email,
-        password: formName.password,
+        email: loginForm.email,
+        password: loginForm.password,
       };
       loginFormRef.value.validate((valid) => {
         if (valid) {
-          login(loginData)
-            .then((data) => {
-              console.log(data);
+          login(qs.stringify(loginData)).then((res) => {
+              let data = res.data;
+              console.log(data)
               if (data.code == 0) {
                 ElMessage.warning(data.description);
               } else {
                 //登陆成功后设置了，localStorage 保存登陆状态和userid
                 ElMessage.success("恭喜你登录成功，将自动跳转首页！");
-                sessionStorage.setItem("User_Data", data.user);
+                sessionStorage.setItem("User_Data", JSON.stringify(data.data));
                 sessionStorage.setItem("Flag", "isLogin");
-                store.dispatch("userLogin", true);
+                store.dispatch("userStatus", true);
                 router.push("/");
               }
-            })
-            .catch(function (error) {
+            }).catch(function (error) {
               if (error) {
                 console.log("登录请求失败");
                 ElMessage.error("登录请求失败，请检查网络");

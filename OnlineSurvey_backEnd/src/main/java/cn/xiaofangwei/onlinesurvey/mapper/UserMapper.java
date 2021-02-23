@@ -2,6 +2,7 @@ package cn.xiaofangwei.onlinesurvey.mapper;
 
 import cn.xiaofangwei.onlinesurvey.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * <p>
@@ -13,7 +14,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 
 public interface UserMapper extends BaseMapper<User> {
-
-    User selectByEmail(String email);
 
 }

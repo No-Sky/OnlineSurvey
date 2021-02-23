@@ -48,8 +48,13 @@ public class AnswerController {
     }
 
     @DeleteMapping
-    public Message deleteAnswer(@RequestParam("amswerId")Integer answerId) {
+    public Message deleteAnswer(@RequestParam("amswerId")Integer answerId) throws SQLException {
         answerService.removeById(answerId);
+        return Message.info();
+    }
+
+    @GetMapping("/analysis")
+    public Message analysis(){
         return Message.info();
     }
 }

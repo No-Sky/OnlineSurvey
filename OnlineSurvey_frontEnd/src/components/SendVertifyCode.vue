@@ -179,7 +179,6 @@ export default defineComponent({
           return false;
         }
       }
-      console.log(props.email)
       try {
         //发送验证码
         await props.sendCode(emailNumber || props.email);

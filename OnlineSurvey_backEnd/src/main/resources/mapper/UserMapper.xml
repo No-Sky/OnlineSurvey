@@ -16,8 +16,10 @@
         userId, email, password, username, statusType
     </sql>
 
-    <select id="selectByEmail" parameterType="String" resultMap="BaseResultMap">
-        select #{Base_Column_List from} `User` where `email` = #{email}
-    </select>
+    <!--<select id="selectByEmail" parameterType="String" resultMap="BaseResultMap">
+        select 
+        <include refid="Base_Column_List"></include>
+        from `User` where `email` = #{email}
+    </select>-->
 
 </mapper>

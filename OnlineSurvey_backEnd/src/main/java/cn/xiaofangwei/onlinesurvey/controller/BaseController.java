@@ -35,10 +35,23 @@ public class BaseController {
                           HttpSession session) {
         Map<String,Object> result = userService.login(email, password);
         if ( (Boolean) result.get("flag") ) {
-            session.setAttribute("user", result.get("user"));
-            return Message.info("登录成功");
+            User user = (User) result.get("user");
+            session.setAttribute("user", user);
+            user.setPassword("");
+            return Message.info("登录成功", user);
         }
         return Message.error((String) result.get("description"));
+    }
+
+    @GetMapping("/logincheck")
+    public Message loginCheck(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            user.setPassword("");
+            return Message.info(user);
+        } else {
+            return Message.error();
+        }
     }
 
     @GetMapping("/logout")
@@ -51,6 +64,7 @@ public class BaseController {
     public Message register(User user, @RequestParam("vertifyCode")String vertifyCode,
                             HttpSession session) {
         String localVertifyCode = (String) session.getAttribute("vertifyCode");
+        System.out.println(session.getId());
         if (!localVertifyCode.equals(vertifyCode)) {
             return Message.error("验证码输入错误，请重试!");
         }
@@ -89,6 +103,7 @@ public class BaseController {
         String code = GenerateVertifyCode.generateVerifyCode(6);
         mailService.sendEmail(email, code);
         session.setAttribute("vertifyCode", code);
+        System.out.println(session.getId());
         removeAttrbute(session, "vertifyCode");
         return Message.info();
     }

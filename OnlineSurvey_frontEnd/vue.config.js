@@ -17,17 +17,18 @@ module.exports = {
         https: false,
         // 编译完是否打开网页
         open: false,
-        
+
         // 代理配置
         // proxy: {
-        //     '^/api': {
-        //         target: '<url>',
+        //     '/api': {
+        //         target: 'http://localhost:10001',
+        //         secure: false,  // 如果是https接口，需要配置这个参数
         //         ws: true,
-        //         changeOrigin: true
+        //         changeOrigin: true,
+        //         pathRewriter: {
+        //             '^/api': ''
+        //         }
         //     },
-        //     '^/foo': {
-        //         target: '<other_url>'
-        //     }
         // }
     },
 

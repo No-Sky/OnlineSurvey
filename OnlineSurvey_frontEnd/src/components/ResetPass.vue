@@ -35,7 +35,7 @@
 </template>
 
 <script>
-  import { designOpera } from './api';
+  import { resetPassword, loginCheck } from './api';
     export default {
     name:'ResetPass',
       data() {
@@ -68,7 +68,7 @@
       methods:{
         //检查登录是否过期
         logincheck(){
-            designOpera({
+            loginCheck({
             opera_type:'logincheck',
           })
           .then(data=>{
@@ -95,7 +95,7 @@
                       type: 'warning'
                     })
                     .then(() => {  //确定时执行操作
-                      designOpera({
+                      resetPassword({
                         opera_type:'resetpass',
                         username:this.rpwForm.username,
                         email:this.rpwForm.email

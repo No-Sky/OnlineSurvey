@@ -33,7 +33,9 @@ class UserSericeImpl extends ServiceImpl<UserMapper, User> implements UserServic
     @Override
     public Map<String, Object> login(String email, String password) {
         Map<String, Object> result = new HashMap<>();
-        User user = userMapper.selectByEmail(email);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("email", email);
+        User user = userMapper.selectOne(queryWrapper);
         if (user != null) {
             if (user.getPassword().equals(password)) {
                 result.put("flag" ,true);
@@ -51,7 +53,10 @@ class UserSericeImpl extends ServiceImpl<UserMapper, User> implements UserServic
 
     @Override
     public User getUserByEmail(String email) {
-        return userMapper.selectByEmail(email);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("email", email);
+        User user = userMapper.selectOne(queryWrapper);
+        return user;
     }
 
     @Override

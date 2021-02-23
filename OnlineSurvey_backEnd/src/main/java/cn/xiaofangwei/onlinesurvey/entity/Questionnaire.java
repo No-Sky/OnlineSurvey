@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -38,15 +41,19 @@ public class Questionnaire implements Serializable {
     private Integer statusType;
 
     @TableField("createTime")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     @TableField("stopTime")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime stopTime;
 
     private Integer distribution;
 
     @TableField("deleteFlag")
     private Integer deleteFlag;
+
+    private List<Question> questions;
 
 
 }

@@ -12,19 +12,19 @@
             <el-button icon="el-icon-plus" type="text" class="rightButton" @click="addQuestionnaireBtn"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="编辑问卷" placement="bottom">
-            <el-button icon="el-icon-edit" type="text" class="rightButton" @click="editWj" :disabled="nowSelect.id==0||nowSelect.id==null"></el-button>
+            <el-button icon="el-icon-edit" type="text" class="rightButton" @click="editWj" :disabled="nowSelect.questionnaireId==0||nowSelect.questionnaireId==null"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" :content="nowSelect.status==0?'发布问卷':'暂停问卷'" placement="bottom" >
-            <el-button :icon="nowSelect.status==0?'el-icon-video-play':'el-icon-video-pause'"  type="text" class="rightButton" @click="pushWj" :disabled="nowSelect.id==0||nowSelect.id==null"></el-button>
+            <el-button :icon="nowSelect.statusType==0?'el-icon-video-play':'el-icon-video-pause'"  type="text" class="rightButton" @click="pushWj" :disabled="nowSelect.questionnaireId==0||nowSelect.id==null"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="预览问卷" placement="bottom">
-            <el-button icon="el-icon-view" type="text" class="rightButton" @click="previewWj" :disabled="nowSelect.id==0||nowSelect.id==null"></el-button>
+            <el-button icon="el-icon-view" type="text" class="rightButton" @click="previewWj" :disabled="nowSelect.questionnaireId==0||nowSelect.questionnaireId==null"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除问卷" placement="bottom">
-            <el-button icon="el-icon-delete" type="text" class="rightButton" @click="deleteWj" :disabled="nowSelect.id==0||nowSelect.id==null"></el-button>
+            <el-button icon="el-icon-delete" type="text" class="rightButton" @click="deleteWj" :disabled="nowSelect.questionnaireId==0||nowSelect.questionnaireId==null"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分享问卷" placement="bottom">
-            <el-button icon="el-icon-share" type="text" class="rightButton" @click="shareWj" :disabled="nowSelect.id==0||nowSelect.id==null"></el-button>
+            <el-button icon="el-icon-share" type="text" class="rightButton" @click="shareWj" :disabled="nowSelect.questionnaireId==0||nowSelect.questionnaireId==null"></el-button>
           </el-tooltip>
           <!--<el-tooltip class="item" effect="dark" content="添加模板库" placement="bottom">-->
             <!--<el-button icon="el-icon-upload" type="text"class="rightButton" @click="addTemp"></el-button>-->
@@ -34,18 +34,18 @@
         <!--左侧导航栏-->
         <el-menu :default-active="defaultActive.toString()" v-loading="loading" class="menu">
           <!--问卷列表-->
-          <div style="width:100%;text-align: center;font-size: 15px;line-height: 20px;margin-top: 20px;color: #303133" v-if="nowSelect.id==0||nowSelect.id==null">
+          <div style="width:100%;text-align: center;font-size: 15px;line-height: 20px;margin-top: 20px;color: #303133" v-if="nowSelect.questionnaireId==0||nowSelect.questionnaireId==null">
             点击上方&nbsp;+&nbsp;创建第一个问卷
           </div>
-          <el-menu-item v-for="(item,index) in wjList" :index="(index+1).toString()" :key="index" @click="wjClick(item.id,index)">
+          <el-menu-item v-for="(item,index) in wjList" :index="(index+1).toString()" :key="index" @click="wjClick(item.questionnaireId,index)">
             <i class="el-icon-tickets"></i>
             <span slot: title style="display: inline-block">
               {{item.title}}
-              <span style="color: #F56C6C;font-size: 13px;" v-if="item.status==0">
+              <span style="color: #F56C6C;font-size: 13px;" v-if="item.statusType==0">
                 <i class="el-icon-link" style="margin:0;font-size: 13px;color: #F56C6C;width:10px;"></i>
                 未发布
               </span>
-              <span style="color: #67C23A;font-size: 13px;" v-if="item.status==1">
+              <span style="color: #67C23A;font-size: 13px;" v-if="item.statusType==1">
                 <i class="el-icon-link" style="margin:0;font-size: 13px;color: #67C23A;width:10px;"></i>
                 已发布
               </span>
@@ -60,14 +60,14 @@
             <el-tab-pane label="问卷设计" name="wjsj">
               <!--内容区域-->
               <div class="content">
-                <div v-show="nowSelect.id==0||nowSelect.id==null">请先选择问卷</div>
-                <design ref="designRef" v-show="nowSelect.id!=0&&nowSelect.id!=null"></design>
+                <div v-show="nowSelect.questionnaireId==0||nowSelect.questionnaireId==null">请先选择问卷</div>
+                <design ref="designRef" :questionnaire="nowSelect" v-show="nowSelect.questionnaireId!=0&&nowSelect.questionnaireId!=null"></design>
               </div>
             </el-tab-pane>
             <el-tab-pane label="回答统计" name="hdtj">
               <div class="content" ref="pdf">
-                <div v-show="nowSelect.id==0||nowSelect.id==null">请先选择问卷</div>
-                <data-show ref="dataShowRef" v-show="nowSelect.id!=0&&nowSelect.id!=null"></data-show>
+                <div v-show="nowSelect.questionnaireId==0||nowSelect.questionnaireId==null">请先选择问卷</div>
+                <data-show ref="dataShowRef" v-show="nowSelect.questionnaireId!=0&&nowSelect.questionnaireId!=null"></data-show>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -81,7 +81,13 @@
           <el-input v-model="willAddWj.title" placeholder="请输入问卷标题" ></el-input>
         </el-form-item>
         <el-form-item label="问卷描述" style="width: 100%;">
-          <el-input v-model="willAddWj.desc" type="textarea" placeholder="请输入问卷描述" rows="5"></el-input>
+          <el-input v-model="willAddWj.description" type="textarea" placeholder="请输入问卷描述" rows="5"></el-input>
+        </el-form-item>
+        <el-form-item label="截止时间" style="width: 100%;">
+          <el-input v-model="willAddWj.stopTime" type="datetime-local"></el-input>
+        </el-form-item>
+        <el-form-item label="分发数量" style="width: 100%;">
+          <el-input v-model="willAddWj.distribution" type="number" placeholder="默认不限制数量"></el-input>
         </el-form-item>
       </el-form>
       <div style="width: 100%;text-align: right">
@@ -142,10 +148,11 @@ import {
 } from "./api";
 import Design from "./Design.vue";
 import DataShow from "./DataShow.vue";
-import { computed, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch, watchEffect } from "vue";
 import { ElMessage } from "element-plus";
 import { ElMessageBox } from "element-plus";
 // import QRCode from 'qrcode'
+import qs from "qs";
 export default {
   components: {
     Design,
@@ -157,7 +164,7 @@ export default {
     const dataShowRef = ref();
     const defaultActive = ref(1); //当前激活菜单
     const activeName = ref("wjsj"); //标签页当前选择项
-    let wjList = reactive([]); //问卷列表
+    const wjList = ref([]); //问卷列表
     const loading = ref(false); //是否显示加载中
     const dialogShow = ref(false); //添加问卷弹窗是否显示
     const shareDialogShow = ref(false); //分享问卷弹窗是否显示
@@ -167,51 +174,65 @@ export default {
     const tempLoading = ref(false);
     const tempSearchTest = ref("");
     let willAddWj = reactive({
-      id: 0,
+      userId: 0,
+      questionnaireId: 0,
       title: "",
-      flag: 0,
-      desc: "感谢您能抽时间参与本次问卷，您的意见和建议就是我们前行的动力！",
+      description: "",
+      statusType: 0,
+      createTime: null,
+      stopTime: null,
+      distribution: 0,
     });
     const shareInfo = reactive({
       url: "",
     });
-    const nowSelect = computed(() => {
-      console.log("nowSelect update");
-      let now = wjList[defaultActive.value - 1];
-      if (wjList.length == 0) {
+    const nowSelect = ref([]);
+    watch(nowSelect, () => {
+      // console.log("nowSelect update");
+      let now = wjList.value[defaultActive.value - 1];
+      if (wjList.value.length == 0) {
         return {
-          id: null,
-          title: null,
-          desc: null,
-          status: null,
+          userId: 0,
+          questionnaireId: 0,
+          title: "",
+          description: "",
+          statusType: 0,
+          createTime: null,
+          stopTime: null,
+          distribution: 0,
         };
       }
       return {
-        id: now.id,
+        userId: now.userId,
+        questionnaireId: now.questionnaireId,
         title: now.title,
-        desc: now.desc,
-        status: now.status,
+        description: now.description,
+        statusType: now.statusType,
+        createTime: now.createTime,
+        stopTime: now.stopTime,
+        distribution: now.distribution,
       };
     });
 
+    const user_session = JSON.parse(sessionStorage.getItem("User_Data"));
+
     const lookDetail = () => {
       //初始化问卷内容
-      designRef.value.init(
-        nowSelect.value.id,
-        nowSelect.value.title,
-        nowSelect.value.desc
-      );
-      console.log("id=" + nowSelect.value.id);
-      dataShowRef.value.dataAnalysis(nowSelect.value.id);
+      designRef.value.init();
+      // dataShowRef.value.dataAnalysis(nowSelect.value.questionnaireId);
     };
 
     const getWjList = () => {
-      this.loading = true;
+      loading.value = true;
       getQuestionnaireList({
-        username: "test",
-      }).then((data) => {
+        params: {
+          userId: user_session.userId,
+        },
+      }).then((res) => {
+        let data = res.data;
         console.log(data);
-        wjList = data.detail;
+        wjList.value = data.data;
+        nowSelect.value = wjList.value[0];
         loading.value = false;
         //获取当前选中问卷题目
         lookDetail();
@@ -221,12 +242,15 @@ export default {
     //展示添加问卷弹窗
     const addQuestionnaireBtn = () => {
       dialogShow.value = true;
-      willAddWj = {
-        id: 0,
-        title: "",
-        flag: 0,
-        desc: "感谢您能抽时间参与本次问卷，您的意见和建议就是我们前行的动力！",
-      };
+      willAddWj.userId = user_session.userId;
+      willAddWj.questionnaireId = 0;
+      willAddWj.title = "";
+      willAddWj.description =
+        "感谢您能抽时间参与本次问卷，您的意见和建议就是我们前行的动力！";
+      willAddWj.statusType = 0;
+      willAddWj.createTime = null;
+      willAddWj.stopTime = null;
+      willAddWj.distribution = 0;
     };
 
     //添加问卷
@@ -235,22 +259,27 @@ export default {
         ElMessage.error("标题不能为空");
         return;
       }
-      addQuestionnaire({
-        username: "test",
+      let questionnaireData = {
+        userId: willAddWj.userId,
+        questionnaireId: willAddWj.questionnaireId,
         title: willAddWj.title,
-        id: willAddWj.id,
-        desc: willAddWj.desc,
-      }).then((data) => {
+        description: willAddWj.description,
+        statusType: willAddWj.statusType,
+        createTime: Date.now,
+        stopTime: willAddWj.stopTime,
+        distribution: willAddWj.distribution,
+      };
+      addQuestionnaire(qs.stringify(questionnaireData)).then((res) => {
+        let data = res.data;
         console.log(data);
-        if (data.code == 0) {
+        if (data.code == 1) {
           ElMessage.success("保存成功");
-          this.getWjList();
+          getWjList();
         } else {
           ElMessage.error(data.description);
         }
       });
       dialogShow.value = false;
-      willAddWj.title = "";
     };
 
     //发布问卷
@@ -261,7 +290,8 @@ export default {
         username: "test",
         wjId: nowSelect.value.id,
         status: status,
-      }).then((data) => {
+      }).then((res) => {
+        let data = res.data;
         console.log(data);
         if (data.code == 0) {
           ElMessage.success(status == 1 ? "问卷发布成功！" : "问卷暂停成功！");
@@ -302,7 +332,7 @@ export default {
     // 编辑问卷
     const editWj = () => {
       dialogShow.value = true;
-      willAddWj = this.nowSelect;
+      willAddWj = nowSelect;
     };
 
     //删除问卷
@@ -321,7 +351,8 @@ export default {
           opera_type: "delete_wj",
           username: "test",
           id: this.nowSelect.id,
-        }).then((data) => {
+        }).then((res) => {
+          let data = res.data;
           console.log(data);
           if (data.code == 0) {
             ElMessage.success("删除成功");
@@ -348,20 +379,26 @@ export default {
       // QRCode.toCanvas(canvas, shareInfo.url);
     };
 
-	//改变模板库页码
-	const changeTempPage = (page) => {
-		this.tempLoading=true;
-		getTempPage({
-		opera_type:'get_temp_wj_list',
-		page:page
-		})
-		.then(data=>{
-			console.log(data);
-			tempDataCount.value =data.count;
-			tempData.value = data.detail;
-			tempLoading.value = false;
-		})
-	}
+    //问卷点击
+    const wjClick = (id, index) => {
+      defaultActive.value = (index + 1).toString();
+      lookDetail();
+    };
+
+    //改变模板库页码
+    const changeTempPage = (page) => {
+      this.tempLoading = true;
+      getTempPage({
+        opera_type: "get_temp_wj_list",
+        page: page,
+      }).then((res) => {
+        let data = res.data;
+        console.log(data);
+        tempDataCount.value = data.count;
+        tempData.value = data.detail;
+        tempLoading.value = false;
+      });
+    };
 
     //打开问卷库
     const openTemp = () => {
@@ -370,6 +407,9 @@ export default {
       //   this.getTempWjList();
     };
 
+    onMounted(() => {
+      getWjList();
+    });
 
     return {
       designRef,
@@ -391,6 +431,7 @@ export default {
       lookDetail,
       getWjList,
       addWj,
+      wjClick,
       pushWj,
       shareWj,
       copySuccess,
@@ -441,7 +482,7 @@ export default {
   //           })
   //       },
   //       /
-  //       
+  //
   //       //预览模板问卷
   //       lookTempWj(item){
   //         let url=window.location.origin+"/tempdisplay/"+item.tempid;//问卷链接
@@ -468,11 +509,7 @@ export default {
   //           }
   //         })
   //       },
-  //       //问卷点击
-  //       wjClick(id,index){
-  //         this.defaultActive=(index+1).toString();
-  //         this.lookDetail();
-  //       },
+  //
   //     }
 };
 </script>

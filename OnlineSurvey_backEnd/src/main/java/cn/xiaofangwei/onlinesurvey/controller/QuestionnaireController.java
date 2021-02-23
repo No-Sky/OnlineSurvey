@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,8 +41,8 @@ public class QuestionnaireController {
         return Message.info(questionnaire);
     }
 
-    @GetMapping("/list/{page}")
-    public Message getQuestionnaireList(@PathVariable("page")Integer page) throws SQLException{
+    @GetMapping("/list")
+    public Message getQuestionnaireList(@RequestParam("page")Integer page) throws SQLException{
         //分页条件
         QueryWrapper<Questionnaire> wrapper = new QueryWrapper<>();
         //分页序列，1：页面号，2：大小
@@ -52,6 +53,14 @@ public class QuestionnaireController {
         result.put("total", mapIPage.getTotal());
         result.put("records", mapIPage.getRecords());
         return Message.info("页面获取成功", result);
+    }
+
+    @GetMapping("/user")
+    public Message getQuestionnaireListByUser(@RequestParam("userId")Integer userId) throws SQLException {
+        QueryWrapper<Questionnaire> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId", userId);
+        List<Questionnaire> questionnaireList = questionnaireService.list(queryWrapper);
+        return Message.info(questionnaireList);
     }
 
     @PostMapping

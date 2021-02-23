@@ -1,5 +1,6 @@
 package cn.xiaofangwei.onlinesurvey.service.impl;
 
+import cn.xiaofangwei.onlinesurvey.entity.Question;
 import cn.xiaofangwei.onlinesurvey.entity.Questionnaire;
 import cn.xiaofangwei.onlinesurvey.mapper.QuestionMapper;
 import cn.xiaofangwei.onlinesurvey.mapper.QuestionnaireMapper;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,10 +29,20 @@ import java.util.Map;
 public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Questionnaire> implements QuestionnaireService {
 
     @Resource
+    QuestionnaireMapper questionnaireMapper;
+    @Resource
     QuestionMapper questionMapper;
 
     @Override
     public IPage<Map<String, Object>> selectMapsPage(Page questionnairePage, QueryWrapper wrapper) {
-        return questionMapper.selectMapsPage(questionnairePage, wrapper);
+        return questionnaireMapper.selectMapsPage(questionnairePage, wrapper);
+    }
+
+    @Override
+    public Questionnaire selectQuestionnaireWithQuestion(Integer questionnaireId) {
+        Questionnaire questionnaire = questionnaireMapper.selectById(questionnaireId);
+        List<Question> questions = questionMapper.selectQuestionsWithOptions(questionnaireId);
+        questionnaire.setQuestions(questions);
+        return questionnaire;
     }
 }
