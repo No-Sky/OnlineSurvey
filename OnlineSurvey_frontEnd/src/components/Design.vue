@@ -108,7 +108,7 @@
   </div>
 </template>
 <script>
-import { reactive, ref } from "vue"
+import { onMounted, reactive, ref } from "vue"
 import { getQuestionList, addQuestion, deleteQuestion } from "./api"
 import { ElMessage, ElMessageBox } from "element-plus"
 import qs from 'qs'
@@ -122,7 +122,7 @@ export default {
     const loading = ref(false);
     const dialogShow = ref(false);
     const dialogTitle = ref("");
-    let detail = ref([]);
+    const detail = ref([]);
     const wjId = ref(0);
     const wjTitle = ref("");
     const wjDesc = ref("")
@@ -155,12 +155,9 @@ export default {
     ]);
 
     //获取问题列表(问卷内容)
-    const local_getQuestionList = () => {
-      detail = [];
+    const local_getQuestionList = (questionnaireId) => {
       loading.value = true;
-      getQuestionList({
-        params: {"questionaireId": wjId}
-      }).then((res) => {
+      getQuestionList({ params: { "questionnaireId": questionnaireId } }).then((res) => {
         let data = res.data;
         console.log(data);
         detail.value = data.data;
@@ -178,7 +175,7 @@ export default {
       wjId.value = questionnaireId;
       wjTitle.value = title;
       wjDesc.value = description;
-      local_getQuestionList();
+      local_getQuestionList(questionnaireId);
     };
 
     //点击添加问题按钮
@@ -240,29 +237,21 @@ export default {
       newItem.textValue = "";
       let questionData = {
         questionId: willAddQuestion.value.id,
-        questionaireId: wjId,
+        questionaireId: wjId.value,
         questionTitle: willAddQuestion.value.title,
         questionType: willAddQuestion.value.type,
         options: willAddQuestion.value.options,
         row: willAddQuestion.value.row,
         required: willAddQuestion.value.must,
       }
-      addQuestion({
-        wjId: wjId.value,
-        questionId: willAddQuestion.value.id,
-        title: willAddQuestion.value.title,
-        type: willAddQuestion.value.type,
-        options: willAddQuestion.value.options,
-        row: willAddQuestion.value.row,
-        must: willAddQuestion.value.must,
-      }).then((res) => {
+      addQuestion(qs.stringify(questionData)).then((res) => {
         let data = res.data;
         console.log(data);
         newItem.id = data.id;
         if (data.code == 1) {
           dialogShow.value = false;
           ElMessage.success("保存成功");
-          local_getQuestionList();
+          local_getQuestionList(wjId.value);
         } else {
           dialogShow.value = false;
           ElMessage.error(data.description);
@@ -282,7 +271,7 @@ export default {
     const editorQuestionBtn = (item) => {
       willAddQuestion.value.title = item.title;
       willAddQuestion.value.type = item.type;
-      willAddQuestion.value.options = JSON.parse(JSON.stringify(item.options));
+      willAddQuestion.value.options = item.options;
       willAddQuestion.value.text = item.text;
       willAddQuestion.value.row = item.row;
       willAddQuestion.value.must = item.must;
@@ -311,6 +300,10 @@ export default {
       willAddQuestion.value.text = "";
       willAddQuestion.value.row = 1;
     };
+
+    onMounted(() => {
+      init();
+    });
 
     return {
       loading,

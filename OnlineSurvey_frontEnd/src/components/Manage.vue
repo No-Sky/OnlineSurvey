@@ -61,7 +61,7 @@
               <!--内容区域-->
               <div class="content">
                 <div v-show="nowSelect.questionnaireId==0||nowSelect.questionnaireId==null">请先选择问卷</div>
-                <design ref="designRef" :questionnaire="nowSelect" v-show="nowSelect.questionnaireId!=0&&nowSelect.questionnaireId!=null"></design>
+                <design ref="designRef" :questionnaire="nowSelect" v-if="nowSelect.questionnaireId!=0&&nowSelect.questionnaireId!=null"></design>
               </div>
             </el-tab-pane>
             <el-tab-pane label="回答统计" name="hdtj">
@@ -74,8 +74,8 @@
       </el-col>
     </el-row>
 
-    <!--添加问卷弹窗-->
-    <el-dialog title="添加问卷" v-model="dialogShow" :close-on-click-modal="false" >
+    <!--添加和编辑问卷弹窗-->
+    <el-dialog :title="dialogTitle" v-model="dialogShow" :close-on-click-modal="false" >
       <el-form ref="form" :model="willAddWj" label-width="80px">
         <el-form-item label="问卷标题" style="width: 100%;" required>
           <el-input v-model="willAddWj.title" placeholder="请输入问卷标题" ></el-input>
@@ -167,13 +167,14 @@ export default {
     const wjList = ref([]); //问卷列表
     const loading = ref(false); //是否显示加载中
     const dialogShow = ref(false); //添加问卷弹窗是否显示
+    const dialogTitle = ref("添加问卷")
     const shareDialogShow = ref(false); //分享问卷弹窗是否显示
     const tempDialog = ref(false); //模板库弹窗是否显示
     const tempData = reactive([]);
     const tempDataCount = ref(0);
     const tempLoading = ref(false);
     const tempSearchTest = ref("");
-    let willAddWj = reactive({
+    const willAddWj = ref({
       userId: 0,
       questionnaireId: 0,
       title: "",
@@ -199,7 +200,7 @@ export default {
           statusType: 0,
           createTime: null,
           stopTime: null,
-          distribution: 0,
+          distribution: null,
         };
       }
       return {
@@ -218,7 +219,7 @@ export default {
 
     const lookDetail = () => {
       //初始化问卷内容
-      designRef.value.init();
+      // designRef.value.init();
       // dataShowRef.value.dataAnalysis(nowSelect.value.questionnaireId);
     };
 
@@ -242,32 +243,32 @@ export default {
     //展示添加问卷弹窗
     const addQuestionnaireBtn = () => {
       dialogShow.value = true;
-      willAddWj.userId = user_session.userId;
-      willAddWj.questionnaireId = 0;
-      willAddWj.title = "";
-      willAddWj.description =
+      willAddWj.value.userId = user_session.userId;
+      willAddWj.value.questionnaireId = 0;
+      willAddWj.value.title = "";
+      willAddWj.value.description =
         "感谢您能抽时间参与本次问卷，您的意见和建议就是我们前行的动力！";
-      willAddWj.statusType = 0;
-      willAddWj.createTime = null;
-      willAddWj.stopTime = null;
-      willAddWj.distribution = 0;
+      willAddWj.value.statusType = 0;
+      willAddWj.value.createTime = null;
+      willAddWj.value.stopTime = null;
+      willAddWj.value.distribution = 0;
     };
 
     //添加问卷
     const addWj = () => {
-      if (willAddWj.title == "") {
+      if (willAddWj.value.title == "") {
         ElMessage.error("标题不能为空");
         return;
       }
       let questionnaireData = {
-        userId: willAddWj.userId,
-        questionnaireId: willAddWj.questionnaireId,
-        title: willAddWj.title,
-        description: willAddWj.description,
-        statusType: willAddWj.statusType,
+        userId: willAddWj.value.userId,
+        questionnaireId: willAddWj.value.questionnaireId,
+        title: willAddWj.value.title,
+        description: willAddWj.value.description,
+        statusType: willAddWj.value.statusType,
         createTime: Date.now,
-        stopTime: willAddWj.stopTime,
-        distribution: willAddWj.distribution,
+        stopTime: willAddWj.value.stopTime,
+        distribution: willAddWj.value.distribution,
       };
       addQuestionnaire(qs.stringify(questionnaireData)).then((res) => {
         let data = res.data;
@@ -332,7 +333,8 @@ export default {
     // 编辑问卷
     const editWj = () => {
       dialogShow.value = true;
-      willAddWj = nowSelect;
+      dialogTitle.value = "编辑问卷";
+      willAddWj.value = nowSelect.value;
     };
 
     //删除问卷
@@ -419,6 +421,7 @@ export default {
       wjList,
       loading,
       dialogShow,
+      dialogTitle,
       shareDialogShow,
       tempDialog,
       tempData,

@@ -73,3 +73,6 @@ create table `Answer` (
     `answer` int,
     `answerText` varchar(100)
 );
+
+
+        

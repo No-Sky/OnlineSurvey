@@ -14,4 +14,8 @@
         optionId, questionId, content
     </sql>
 
+    <select id="selectByQuestionId" resultMap="BaseResultMap" parameterType="Integer">
+        select * from Option where questionId = #{questionId}
+    </select>
+
 </mapper>

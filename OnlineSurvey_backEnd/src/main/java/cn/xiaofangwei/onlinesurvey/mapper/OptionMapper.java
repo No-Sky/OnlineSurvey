@@ -3,6 +3,8 @@ package cn.xiaofangwei.onlinesurvey.mapper;
 import cn.xiaofangwei.onlinesurvey.entity.Option;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
  * <p>
  *  Mapper 接口
@@ -13,5 +15,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 
 public interface OptionMapper extends BaseMapper<Option> {
+
+    List<Option> selectByQuestionId(Integer questionId);
 
 }

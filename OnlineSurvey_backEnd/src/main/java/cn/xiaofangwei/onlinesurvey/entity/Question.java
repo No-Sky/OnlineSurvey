@@ -41,6 +41,7 @@ public class Question implements Serializable {
 
     private Integer row;
 
+    @TableField(exist = false)
     private List<Option> options;
 
 

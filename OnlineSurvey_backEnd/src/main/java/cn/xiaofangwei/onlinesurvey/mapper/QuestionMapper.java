@@ -16,7 +16,7 @@ import java.util.List;
 
 public interface QuestionMapper extends BaseMapper<Question> {
 
-    Question selectQuestionWithOptions(Integer questionId);
+//    Question selectQuestionWithOptions(Integer questionId);
 
-    List<Question> selectQuestionsWithOptions(Integer questionnaireId);
+//    List<Question> selectQuestionsWithOptions(Integer questionnaireId);
 }

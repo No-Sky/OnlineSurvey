@@ -53,6 +53,7 @@ public class Questionnaire implements Serializable {
     @TableField("deleteFlag")
     private Integer deleteFlag;
 
+    @TableField(exist = false)
     private List<Question> questions;
 
 
