@@ -6,10 +6,12 @@ import cn.xiaofangwei.onlinesurvey.exception.SendEmailException;
 import cn.xiaofangwei.onlinesurvey.service.MailService;
 import cn.xiaofangwei.onlinesurvey.service.UserService;
 import cn.xiaofangwei.onlinesurvey.utils.GenerateVertifyCode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,6 +40,9 @@ public class BaseController {
             User user = (User) result.get("user");
             session.setAttribute("user", user);
             user.setPassword("");
+            if (user.getUserId() == 1) {
+                return Message.info(2, "欢迎超级管理员登录本系统！", user);
+            }
             return Message.info("登录成功", user);
         }
         return Message.error((String) result.get("description"));

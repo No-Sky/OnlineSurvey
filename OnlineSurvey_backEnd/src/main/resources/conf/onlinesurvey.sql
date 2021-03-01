@@ -74,5 +74,9 @@ create table `Answer` (
     `answerText` varchar(100)
 );
 
+select A.optionId,count(B.submitId) as submitCount,A.content 
+	from (select * from `Option` where questionId = 1) A 
+    left join Answer B on A.optionId=B.answer 
+    group by A.optionId
 
         

@@ -11,6 +11,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * <p>
@@ -41,11 +42,13 @@ public class Questionnaire implements Serializable {
     private Integer statusType;
 
     @TableField("createTime")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime createTime;
 
     @TableField("stopTime")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime stopTime;
 
     private Integer distribution;
@@ -55,6 +58,9 @@ public class Questionnaire implements Serializable {
 
     @TableField(exist = false)
     private List<Question> questions;
+
+    @TableField(exist = false)
+    private User user;
 
 
 }

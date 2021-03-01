@@ -9,37 +9,37 @@
       <div class="top" v-if="desc!=''">
         {{desc}}
       </div>
-      <el-card class="box-card" v-for="(item,index) in detail" :key="index">
+      <el-card class="box-card" v-for="(item,index) in detail.questions" :key="index">
         <div slot: header class="clearfix">
 
           <div class="questionTitle">
             <!--显示必填标识-->
             <span style="color: #F56C6C;">
-              <span v-if="item.must">*</span>
+              <span v-if="item.required == 1 ? true : false">*</span>
               <span v-else>&nbsp;</span>
             </span>
-            {{(index+1)+'.'+item.title}}
+            {{(index+1)+'.'+item.questionTitle}}
           </div>
         </div>
 
         <!--单选题展示-->
-        <div v-if="item.type=='radio'">
+        <div v-if="item.questionType==1">
             <div class="text item" v-for="(optionItem, index) in item.options" :key="index">
-                <el-radio v-model="item.radioValue" :label="optionItem.id" style="margin: 5px;">{{ optionItem.title }}</el-radio>
+                <el-radio v-model="item.radioValue" :label="optionItem.optionId" style="margin: 5px;">{{ optionItem.content }}</el-radio>
             </div>
         </div>
         
 
         <!--多选题展示-->
-        <el-checkbox-group v-if="item.type=='checkbox'" v-model="item.checkboxValue">
+        <el-checkbox-group v-if="item.questionType==2" v-model="item.checkboxValue">
           <div class="text item"  v-for="(optionItem, index) in item.options" :key="index">
-            <el-checkbox :label="optionItem.id" style="margin: 5px;">{{ optionItem.title }}</el-checkbox>
+            <el-checkbox :label="optionItem.optionId" style="margin: 5px;">{{ optionItem.content }}</el-checkbox>
           </div>
         </el-checkbox-group>
 
         <!--填空题展示-->
         <el-input
-          v-if="item.type=='text'"
+          v-if="item.questionType==3"
           type="textarea"
           :rows="item.row"
           v-model="item.textValue"
@@ -50,16 +50,17 @@
        <el-button type="primary" style="margin: 5px;" @click="submitBtn" :loading="submitLoading">{{submitText}}</el-button>
 
       <div class="bottom">
-        <el-link type="info" href="/">问卷喵&nbsp;提供技术支持</el-link>
+        <el-link type="info" href="/">调研汪&nbsp;提供技术支持</el-link>
       </div>
     </div>
   </div>
 </template>
 <script>
 import { onMounted, reactive, ref } from "vue";
-import { getQuestionnaireById, addAnswer } from "./api";
+import { getQuestionnaireById, addAnswer, getQuestionList } from "./api";
 import { ElMessage } from "element-plus";
 import { useRoute, useRouter } from "vue-router";
+import qs from 'qs'
 export default {
   name: "Display",
   setup() {
@@ -67,53 +68,46 @@ export default {
     const dialogTitle = ref("");
     const dialogType = ref(1); //1添加 2修改
     const oldItem = ref(null); //编辑中问题的对象
-    const willAddQuestion = ref({
-      type: "",
-      title: "",
-      options: [""],
-      text: "",
-      row: 1,
-    });
-    const allType = reactive([
-      {
-        value: "radio",
-        label: "单选题",
-      },
-      {
-        value: "checkbox",
-        label: "多选题",
-      },
-      {
-        value: "text",
-        label: "填空题",
-      },
-    ]);
     const wjId = ref(0);
     const title = ref("");
     const desc = ref("");
-    let detail = ref([]);
+    const detail = reactive({questions: []});
     const startTimestamp = ref(0); //填写问卷开始时间戳 毫秒
     const submitLoading = ref(false); //提交按钮 加载中状态
     const submitText = ref("提交"); //提交按钮文字
+    const checkboxValue =  ([])
     const route = useRoute();
     const router = useRouter();
 
     onMounted(() => {
       wjId.value = route.params.id;
-      console.log(wjId.value)
       getQuestionnaireById({
-        opera_type: "get_info",
-        wjId: wjId,
-        username: "test", //增加登录验证后不需传递（后端从session获取）
-      }).then((data) => {
-        console.log(data);
-        if (data.code == 0) {
-          title.value = data.title;
-          desc.value = data.description;
-          detail.value = data.detail;
-        } else {
-          ElMessage.error(data.description);
-        }
+        params: {
+          "questionnaireId": wjId.value,
+        }}).then((res) => {
+          let data = res.data;
+          // console.log(data);
+          if (data.code == 1) {
+            title.value = data.data.title;
+            desc.value = data.data.description;
+             getQuestionList({ params: { questionnaireId: wjId.value} }).then((res) => {
+                let data = res.data;
+                console.log(data);
+                data.data.forEach(question => {
+                  if (question.questionType == 2) {
+                    question.checkboxValue= []
+                  }
+                  detail.questions.push(question)
+                })
+              })
+              .catch((error) => {
+                if (error) {
+                  ElMessage.error("网络错误，请重试！");
+                }
+              });
+          } else {
+            ElMessage.error(data.description);
+          }
       });
       startTimestamp.value = new Date().getTime(); //时间戳 毫秒
     });
@@ -123,16 +117,36 @@ export default {
       submitLoading.value = true;
       submitText.value = "提交中";
       let useTime = parseInt(
-        (new Date().getTime() - this.startTimestamp) / 1000
+        (new Date().getTime() - startTimestamp.value) / 1000
       ); //填写问卷用时 秒
+
+      for (let index = 0; index < detail.questions.length; index++) {
+        let question = detail.questions[index];
+        if (question.required  == 1) {
+          if (question.radioValue == null || question.checkboxValue == null || question.textValue == "")
+            ElMessage.warning("还有必填项目未填写！");
+            submitLoading.value = false;
+            return false;
+        }
+      }
+
+      let answerData = {
+        "questionnaireId": parseInt(wjId.value),
+        "questions": detail.questions,
+        "useTime": useTime,
+      }
       addAnswer({
-        opera_type: "submit_wj",
-        wjId: wjId.value,
-        useTime: useTime,
-        detail: detail,
-      }).then((data) => {
-        console.log(data);
-        if (data.code == 0) {
+        url: "http://localhost:10001/answer",
+        method: "POST",
+        data: JSON.stringify(answerData),
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      }).then((res) => {
+        let data = res.data;
+        // console.log(data);
+        if (data.code == 1) {
           //提交成功
           submitLoading.value = false;
           submitText.value = "提交";
@@ -142,7 +156,7 @@ export default {
           submitText.value = "提交";
           ElMessage.error(data.description);
         }
-      });
+      })
     };
 
     return {
@@ -150,10 +164,9 @@ export default {
       dialogTitle,
       dialogType,
       oldItem,
-      willAddQuestion,
-      allType,
       title,
       desc,
+      checkboxValue,
       detail,
       startTimestamp,
       submitLoading,
@@ -161,68 +174,6 @@ export default {
       submitBtn,
     };
   },
-  // data(){
-  //   return{
-  //     dialogShow:false,
-  //     dialogTitle:'',
-  //     dialogType:1,//1添加 2修改
-  //     oldItem:null,//编辑中问题的对象
-  //     willAddQuestion:{
-  //       type:'',
-  //       title:'',
-  //       options:[''],
-  //       text:'',
-  //       row:1,
-  //     },
-  //     allType:[
-  //       {
-  //         value:'radio',
-  //         label:'单选题',
-  //       },
-  //       {
-  //         value:'checkbox',
-  //         label:'多选题',
-  //       },
-  //       {
-  //         value:'text',
-  //         label:'填空题',
-  //       },
-  //     ],
-  //     title:'',
-  //     desc:'',
-  //     detail:[],
-  //     startTimestamp:0,//填写问卷开始时间戳 毫秒
-  //     submitLoading:false,//提交按钮 加载中状态
-  //     submitText:'提交',//提交按钮文字
-  //   }
-  // },
-  // mounted(){
-  //   var wjId=this.$route.params.id;
-  //   answerOpera({
-  //     opera_type:'get_info',
-  //     wjId:wjId,
-  //     username:'test'//增加登录验证后不需传递（后端从session获取）
-  //   })
-  //     .then(data=>{
-  //       console.log(data);
-  //       if(data.code==0){
-  //         this.title=data.title;
-  //         this.desc=data.desc;
-  //         this.detail=data.detail;
-  //         document.title=data.title;
-  //       }
-  //       else{
-  //         this.$message({
-  //           type: 'error',
-  //           message: data.msg
-  //         });
-  //       }
-  //     })
-  //   this.startTimestamp=new Date().getTime();//时间戳 毫秒
-  // },
-  // methods:{
-  //
-  // }
 };
 </script>
 <style scoped>

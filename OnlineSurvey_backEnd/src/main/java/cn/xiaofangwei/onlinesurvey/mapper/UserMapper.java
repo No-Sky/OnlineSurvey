@@ -3,6 +3,7 @@ package cn.xiaofangwei.onlinesurvey.mapper;
 import cn.xiaofangwei.onlinesurvey.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * <p>
@@ -14,5 +15,8 @@ import org.apache.ibatis.annotations.Param;
  */
 
 public interface UserMapper extends BaseMapper<User> {
+
+    @Select("select userId, username from User where userId = #{userId}")
+    User selectUserNameById(@Param("userId") Integer userId);
 
 }

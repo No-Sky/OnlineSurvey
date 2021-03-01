@@ -44,5 +44,14 @@ public class Question implements Serializable {
     @TableField(exist = false)
     private List<Option> options;
 
+    @TableField(exist = false)
+    private Integer radioValue;
+
+    @TableField(exist = false)
+    private Integer checkboxValue[];
+
+    @TableField(exist = false)
+    private String textValue;
+
 
 }

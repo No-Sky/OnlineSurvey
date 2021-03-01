@@ -8,16 +8,16 @@
       <div class="top" v-if="wjDesc!=''">
         {{wjDesc}}
       </div>
-    <el-card class="box-card" v-for="(item,index) in detail" :key="index" style="margin: 10px;">
+    <el-card class="box-card" v-for="(item,index) in detail.questions" :key="index" style="margin: 10px;">
         <div slo: header class="clearfix">
           <div class="questionTitle">
             <!--显示必填标识-->
             <span style="color: #F56C6C;">
-              <span v-if="item.must">*</span>
+              <span v-if="item.required">*</span>
               <span v-else>&nbsp;</span>
             </span>
             <span style="color: black;margin-right: 3px;">{{(index+1)+'.'}}</span>
-            {{item.title}}
+            {{item.questionTitle}}
           </div>
           <div style="float: right;">
             <el-button style="padding: 2px" type="text" @click="editorQuestionBtn(item)">编辑</el-button>
@@ -26,27 +26,31 @@
         </div>
 
         <!--单选题展示-->
-        <div  v-if="item.type=='radio'">
-            <div class="text item" v-for="(option,index) in item.options" :key="index">
-          <el-radio v-model="item.radioValue" :label="index" style="margin: 5px;">{{ option.title }}</el-radio>
-        </div>
+        <div  v-if="item.questionType==1">
+          <div class="text item" v-for="(option,index) in item.options" :key="index">
+            <el-radio v-model="item.radioValue" :label="index" style="margin: 5px;">{{ option.content }}</el-radio>
+          </div>
         </div>
 
         <!--多选题展示-->
-        <el-checkbox-group v-if="item.type=='checkbox'" v-model="item.checkboxValue">
-          <div class="text item"  v-for="(option,index) in item.options" :key="index">
-            <el-checkbox :label="index" style="margin: 5px;">{{ option.title }}</el-checkbox>
-          </div>
-        </el-checkbox-group>
+        <div v-if="item.questionType==2">
+          <el-checkbox-group  v-model="checkboxValue">
+            <div class="text item"  v-for="(option,index) in item.options" :key="index">
+              <el-checkbox :label="option.optionId" style="margin: 5px;">{{ option.content }}</el-checkbox>
+            </div>
+          </el-checkbox-group>
+        </div>
+        
 
         <!--填空题展示-->
-        <el-input
-          v-if="item.type=='text'"
-          type="textarea"
-          :rows="item.row"
-          resize="none"
-          v-model="item.textValue">
-        </el-input>
+        <div v-if="item.questionType==3">
+          <el-input
+            type="textarea"
+            :rows="item.row"
+            resize="none"
+            v-model="item.textValue">
+          </el-input>
+        </div>
 
       </el-card>
 
@@ -78,7 +82,7 @@
           <el-form-item :label="'选项'+(index+1)" v-for="(item,index) in willAddQuestion.options" :key="index" >
             <el-row>
               <el-col :span="16">
-                <el-input  v-model="item.title" placeholder="请输入选项名" style="width: 90%;"></el-input>
+                <el-input  v-model="item.content" placeholder="请输入选项名" style="width: 90%;"></el-input>
               </el-col>
             <el-col :span="8">
               <el-button type="danger" plain class="" @click="deleteOptionBtn(index)" >删除选项</el-button>
@@ -108,24 +112,23 @@
   </div>
 </template>
 <script>
-import { onMounted, reactive, ref } from "vue"
-import { getQuestionList, addQuestion, deleteQuestion } from "./api"
-import { ElMessage, ElMessageBox } from "element-plus"
-import qs from 'qs'
+import { onBeforeUpdate, onMounted, reactive, ref } from "vue";
+import { getQuestionList, addQuestion, deleteQuestion } from "./api";
+import { ElMessage, ElMessageBox } from "element-plus";
 export default {
   props: {
     questionnaire: {
-      type: Object
-    } 
+      type: Object,
+    },
   },
   setup(props, proxy) {
     const loading = ref(false);
     const dialogShow = ref(false);
     const dialogTitle = ref("");
-    const detail = ref([]);
+    const detail = reactive({questions: []});
     const wjId = ref(0);
     const wjTitle = ref("");
-    const wjDesc = ref("")
+    const wjDesc = ref("");
     const willAddQuestion = ref({
       id: 0,
       type: "",
@@ -153,30 +156,48 @@ export default {
         label: "填空题",
       },
     ]);
+    const checkboxValue = ref([])
 
     //获取问题列表(问卷内容)
     const local_getQuestionList = (questionnaireId) => {
+      detail.questions = [];
       loading.value = true;
-      getQuestionList({ params: { "questionnaireId": questionnaireId } }).then((res) => {
-        let data = res.data;
-        console.log(data);
-        detail.value = data.data;
-        loading.value = false;
-      }).catch(error => {
-        if(error) {
-          ElMessage.error("网络错误，请重试！");
-        }
-      });
+      getQuestionList({ params: { questionnaireId: questionnaireId } })
+        .then((res) => {
+          let data = res.data;
+          // console.log(data);
+          data.data.forEach(question => {
+            if (question.questionType == 2) {
+                question.checkboxValue= []
+              }
+              detail.questions.push(question)
+          });
+          loading.value = false;
+        })
+        .catch((error) => {
+          if (error) {
+            ElMessage.error("网络错误，请重试！");
+          }
+        });
     };
 
     //初始化问卷所有问题
-    const init = () => {
-      const { questionnaireId, title, description } = props.questionnaire;
+    const init = (questionnaireId, title, description) => {
+      // const { questionnaireId, title, description } = props.questionnaire;
       wjId.value = questionnaireId;
       wjTitle.value = title;
       wjDesc.value = description;
       local_getQuestionList(questionnaireId);
     };
+
+    onMounted(() => {
+      const { questionnaireId, title, description } = props.questionnaire;
+      init(questionnaireId, title, description);
+    });
+
+    onBeforeUpdate(() => {
+      // detail.questions = [];
+    });
 
     //点击添加问题按钮
     const addQuestionBtn = () => {
@@ -191,8 +212,9 @@ export default {
         title: "",
         options: [
           {
-            title: "", //选项标题
-            id: 0, //选项id
+            content: "", //选项标题
+            optionId: 0, //选项id
+            questionId: 0,
           },
         ],
         row: 1,
@@ -203,14 +225,15 @@ export default {
 
     //删除问题
     const deleteQuestionBtn = (index) => {
+      let deleteData = { _method:"DELETE", params: {"questionId": detail.value[index].questionId} }
       ElMessageBox.confirm("确定删除此题目?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
       }).then(() => {
-        deleteQuestion(qs.stringify({ questionId: detail.value[index].id, })).then((res) => {
+        deleteQuestion(deleteData).then((res) => {
           let data = res.data;
-          console.log(data);
+          // console.log(data);
           if (data.code == 1) {
             detail.value.splice(index, 1);
             ElMessage.success("删除成功");
@@ -219,6 +242,22 @@ export default {
           }
         });
       });
+    };
+
+    const questionTypeToId = (type) => {
+      if (type == "radio") return 1;
+      if (type == "checkbox") return 2;
+      if (type == "text") return 3;
+    };
+
+    const questionIdToType = (typeId) => {
+      if (typeId == 1) return "radio";
+      if (typeId == 2) return "checkbox";
+      if (typeId == 3) return "text";
+    };
+
+    const requiredInt = () => {
+      return willAddQuestion.value.must ? 1 : 0;
     };
 
     //确认添加/保存题目
@@ -235,18 +274,27 @@ export default {
       newItem.radioValue = -1;
       newItem.checkboxValue = [];
       newItem.textValue = "";
+
       let questionData = {
         questionId: willAddQuestion.value.id,
-        questionaireId: wjId.value,
+        questionnaireId: wjId.value,
         questionTitle: willAddQuestion.value.title,
-        questionType: willAddQuestion.value.type,
+        questionType: questionTypeToId(willAddQuestion.value.type),
         options: willAddQuestion.value.options,
         row: willAddQuestion.value.row,
-        required: willAddQuestion.value.must,
-      }
-      addQuestion(qs.stringify(questionData)).then((res) => {
+        required: requiredInt(),
+      };
+      addQuestion({
+        url: "http://localhost:10001/question",
+        method: "POST",
+        data: JSON.stringify(questionData),
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      }).then((res) => {
         let data = res.data;
-        console.log(data);
+        // console.log(data);
         newItem.id = data.id;
         if (data.code == 1) {
           dialogShow.value = false;
@@ -269,13 +317,13 @@ export default {
 
     //点击编辑问题按钮
     const editorQuestionBtn = (item) => {
-      willAddQuestion.value.title = item.title;
-      willAddQuestion.value.type = item.type;
+      willAddQuestion.value.title = item.questionTitle;
+      willAddQuestion.value.type = questionIdToType(item.questionType);
       willAddQuestion.value.options = item.options;
       willAddQuestion.value.text = item.text;
       willAddQuestion.value.row = item.row;
-      willAddQuestion.value.must = item.must;
-      willAddQuestion.value.id = item.id;
+      willAddQuestion.value.must = item.required == 1 ? true : false;
+      willAddQuestion.value.id = item.questionId;
       dialogTitle.value = "编辑问题";
       dialogShow.value = true;
     };
@@ -283,8 +331,9 @@ export default {
     //添加选项
     const addOptionBtn = () => {
       willAddQuestion.value.options.push({
-        title: "",
-        id: 0,
+        content: "",
+        optionId: 0,
+        questionId: willAddQuestion.value.id,
       });
     };
 
@@ -301,9 +350,9 @@ export default {
       willAddQuestion.value.row = 1;
     };
 
-    onMounted(() => {
-      init();
-    });
+    // onMounted(() => {
+    //   init();
+    // });
 
     return {
       loading,
@@ -315,6 +364,7 @@ export default {
       wjDesc,
       willAddQuestion,
       allType,
+      checkboxValue,
       init,
       addQuestionBtn,
       deleteQuestionBtn,

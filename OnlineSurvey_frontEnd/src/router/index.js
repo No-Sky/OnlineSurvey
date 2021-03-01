@@ -15,6 +15,8 @@ import ResetPass from '@/components/ResetPass.vue'
 import Display from '@/components/Display.vue'
 import ThankYou from '@/components/ThankYou.vue'
 
+import Admin from '@/components/admin/Admin.vue'
+
 
 const routes = [
   {
@@ -27,7 +29,7 @@ const routes = [
         name: 'Index',
         component: Index,
         meta: {
-          title: '问道问卷网'
+          title: '调研汪'
         }
       },
       {
@@ -36,7 +38,7 @@ const routes = [
         component: Login,
         meta: {
           isLogin: false,
-          title: "登录————问道问卷网"
+          title: "登录————调研汪"
         }
       },
       {
@@ -45,7 +47,7 @@ const routes = [
         component: Register,
         meta: {
           isLogin: false,
-          title: '注册————问道问卷网'
+          title: '注册————调研汪'
         }
       },
       {
@@ -53,7 +55,7 @@ const routes = [
         name: 'ResetPass',
         component: ResetPass,
         meta: {
-          title: '重置密码————问道问卷网'
+          title: '重置密码————调研汪'
         }
       },
       {
@@ -62,7 +64,7 @@ const routes = [
         component: Manage,
         meta: {
           isLogin: true,
-          title: "问卷管理————问道问卷网"
+          title: "问卷管理————调研汪"
         }
       },
     ]
@@ -72,7 +74,7 @@ const routes = [
     name: 'Display',
     component: Display,
     meta: {
-      title: '问卷填写————问道问卷网'
+      title: '问卷填写————调研汪'
     }
   },
   {
@@ -80,9 +82,24 @@ const routes = [
     name: 'ThankYou',
     component: ThankYou,
     meta: {
-      title: '感谢填写————问道问卷网'
+      title: '感谢填写————调研汪'
     }
   },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: Header,
+    children: [
+      {
+        path: '/admin',
+        component: Admin,
+        meta: {
+          isLogin: true,
+          title: "后台管理"
+        }
+      },
+    ]
+  }
 ]
 
 const router = createRouter({

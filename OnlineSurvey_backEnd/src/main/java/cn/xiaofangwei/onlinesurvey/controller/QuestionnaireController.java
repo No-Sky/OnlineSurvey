@@ -48,11 +48,7 @@ public class QuestionnaireController {
         //分页序列，1：页面号，2：大小
         Page<Questionnaire> questionnairePage = new Page<>(page,10);
         IPage<Map<String, Object>> mapIPage = questionnaireService.selectMapsPage(questionnairePage, wrapper);
-        Map<String, Object> result = new HashMap<>();
-        result.put("pages", mapIPage.getPages());
-        result.put("total", mapIPage.getTotal());
-        result.put("records", mapIPage.getRecords());
-        return Message.info("页面获取成功", result);
+        return Message.info("页面获取成功", mapIPage);
     }
 
     @GetMapping("/user")
@@ -65,7 +61,7 @@ public class QuestionnaireController {
 
     @PostMapping
     public Message saveQuestionnaire(Questionnaire questionnaire) throws SQLException {
-        questionnaireService.save(questionnaire);
+        questionnaireService.saveOrUpdate(questionnaire);
         return Message.info();
     }
 

@@ -10,7 +10,7 @@ let config = {
     withCredentials: true, // Check cross-site Access-Control
   };
   
-  const axios = _axios.create(config);
+const axios = _axios.create(config);
 
 const base_url = "http://localhost:10001"
 
@@ -36,9 +36,26 @@ export const loginCheck= data => {
     return axios.post(base_url +'/logincheck', data)
 }
 
+/** User API */
+export const getUserList = data => {
+    return axios.get(base_url +'/user/list', data)
+}
+
+export const editUser = data => {
+    return axios.put(base_url +'/user', data)
+}
+
+export const deleteUser = data => {
+    return axios.delete(base_url +'/user', data);
+}
+
 /**  Questioinnaire API */
+export const getQuestionnaireListbyUser = data => {
+    return axios.get(base_url +'/questionnaire/user', data)
+}
+
 export const getQuestionnaireList = data => {
-    return axios.get(base_url + '/questionnaire/user', data)
+    return axios.get(base_url +'/questionnaire/list', data)
 }
 
 export const getQuestionnaireById = data => {
@@ -49,7 +66,7 @@ export const addQuestionnaire = data => {
     return axios.post(base_url + '/questionnaire', data)
 }
 
-export const pushQuestionnaire = data => {
+export const editQuestionnaire = data => {
     return axios.put(base_url + '/questionnaire', data)
 }
 
@@ -67,7 +84,8 @@ export const getQuestionList = data => {
 }
 
 export const addQuestion = data => {
-    return axios.post(base_url + '/question', data)
+    return axios(data)
+    // return axios.post(base_url + '/question', data)
 }
 
 export const deleteQuestion = data => {
@@ -84,5 +102,5 @@ export const getAnswerText = data => {
 }
 
 export const addAnswer = data => {
-    return axios.post(base_url + '/answer/text', data)
+    return axios(data)
 }

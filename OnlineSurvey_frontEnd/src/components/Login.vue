@@ -76,9 +76,15 @@ export default {
         if (valid) {
           login(qs.stringify(loginData)).then((res) => {
               let data = res.data;
-              console.log(data)
+              // console.log(data)
               if (data.code == 0) {
                 ElMessage.warning(data.description);
+              } else if (data.code == 2) {
+                  ElMessage.success(data.description);
+                  sessionStorage.setItem("User_Data", JSON.stringify(data.data));
+                  sessionStorage.setItem("Flag", "isLogin");
+                  store.dispatch("userStatus", true);
+                  router.push("/admin");
               } else {
                 //登陆成功后设置了，localStorage 保存登陆状态和userid
                 ElMessage.success("恭喜你登录成功，将自动跳转首页！");

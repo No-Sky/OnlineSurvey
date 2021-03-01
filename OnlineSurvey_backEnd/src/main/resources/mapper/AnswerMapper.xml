@@ -17,5 +17,11 @@
     <sql id="Base_Column_List">
         answerId, questionnaireId, questionId, submitId, questionType, answer, answerText
     </sql>
+    <!--<select id="selectOptionAnalysis" resultType="cn.xiaofangwei.onlinesurvey.entity.vo.AnalysisSelectView" parameterType="Integer">
+        select A.optionId,count(B.submitId) as submitCount,A.content
+        from (select * from `Option` where questionId = #{questionId}) A
+         left join Answer B on A.optionId=B.answer
+        group by A.optionId
+    </select>-->
 
 </mapper>

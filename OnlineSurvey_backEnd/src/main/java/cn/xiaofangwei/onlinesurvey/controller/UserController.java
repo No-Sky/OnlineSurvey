@@ -40,18 +40,14 @@ public class UserController {
         return Message.info(user);
     }
 
-    @GetMapping("/list/{page}")
-    public Message getUserList(@PathVariable("page")Integer page) throws SQLException {
+    @GetMapping("/list")
+    public Message getUserList(@RequestParam("page")Integer page) throws SQLException {
         //分页条件
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         //分页序列，1：页面号，2：大小
         Page<User> userPage = new Page<>(page,10);
         IPage<Map<String, Object>> mapIPage = userService.selectMapsPage(userPage, wrapper);
-        Map<String, Object> result = new HashMap<>();
-        result.put("pages", mapIPage.getPages());
-        result.put("total", mapIPage.getTotal());
-        result.put("records", mapIPage.getRecords());
-        return Message.info("页面获取成功", result);
+        return Message.info("页面获取成功", mapIPage);
     }
 
     @PostMapping
@@ -67,7 +63,7 @@ public class UserController {
     }
 
     @DeleteMapping
-    public Message deleteUserById(@RequestParam("/userId")Integer userId) throws SQLException {
+    public Message deleteUserById(@RequestParam("userId")Integer userId) throws SQLException {
         userService.removeById(userId);
         return Message.info();
     }

@@ -52,6 +52,21 @@ public class Message {
         return message;
     }
 
+    public static Message info(Integer code, String description) {
+        Message message = new Message();
+        message.setCode(code);
+        message.setDescription(description);
+        return message;
+    }
+
+    public static Message info(Integer code, String description, Object data) {
+        Message message = new Message();
+        message.setCode(code);
+        message.setDescription(description);
+        message.setData(data);
+        return message;
+    }
+
     public static Message info(Object data) {
         return Message.info("请求成功", data);
     }

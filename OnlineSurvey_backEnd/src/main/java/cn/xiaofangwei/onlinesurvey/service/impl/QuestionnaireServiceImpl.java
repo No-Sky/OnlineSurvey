@@ -1,9 +1,10 @@
 package cn.xiaofangwei.onlinesurvey.service.impl;
 
-import cn.xiaofangwei.onlinesurvey.entity.Question;
 import cn.xiaofangwei.onlinesurvey.entity.Questionnaire;
+import cn.xiaofangwei.onlinesurvey.entity.User;
 import cn.xiaofangwei.onlinesurvey.mapper.QuestionMapper;
 import cn.xiaofangwei.onlinesurvey.mapper.QuestionnaireMapper;
+import cn.xiaofangwei.onlinesurvey.mapper.UserMapper;
 import cn.xiaofangwei.onlinesurvey.service.QuestionnaireService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -30,19 +31,31 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
 
     @Resource
     QuestionnaireMapper questionnaireMapper;
+
     @Resource
     QuestionMapper questionMapper;
 
+    @Resource
+    UserMapper userMapper;
+
     @Override
     public IPage<Map<String, Object>> selectMapsPage(Page questionnairePage, QueryWrapper wrapper) {
-        return questionnaireMapper.selectMapsPage(questionnairePage, wrapper);
+        questionnairePage.setOptimizeCountSql(true);
+        IPage mapIPage = questionnaireMapper.selectPageVo(questionnairePage);
+//        List<Questionnaire> questionnaireList = (List<Questionnaire>) mapIPage.getRecords();
+//        questionnaireList.forEach(questionnaire -> {
+//            User user = userMapper.selectById(questionnaire.getUserId());
+//            questionnaire.setUser(user);
+//        });
+//        mapIPage.setRecords(questionnaireList);
+        return mapIPage;
     }
 
     @Override
     public Questionnaire selectQuestionnaireWithQuestion(Integer questionnaireId) {
         Questionnaire questionnaire = questionnaireMapper.selectById(questionnaireId);
-        List<Question> questions = questionMapper.selectQuestionsWithOptions(questionnaireId);
-        questionnaire.setQuestions(questions);
+//        List<Question> questions = questionMapper.selectQuestionsWithOptions(questionnaireId);
+//        questionnaire.setQuestions(questions);
         return questionnaire;
     }
 }

@@ -18,7 +18,7 @@ public class QuestionMapperTest {
     @Resource
     QuestionMapper questionMapper;
 
-    @Test
+    /*@Test
     public void selectQuestionsWithOptionsTest(){
         List<Question> questions = questionMapper.selectQuestionsWithOptions(1);
         System.out.println(questions);
@@ -29,12 +29,5 @@ public class QuestionMapperTest {
         Question question = questionMapper.selectQuestionWithOptions(1);
         System.out.println(question);
     }
-
-    @Test
-    public void selectXXXTest(){
-//        Question question = questionMapper.selectXXX(1);
-        List<Question> questions = questionMapper.selectYYY();
-        System.out.println(questions);
-    }
-
+*/
 }

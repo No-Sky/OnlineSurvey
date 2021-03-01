@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import installElementPlus from './plugins/element'
-import VueClipboard from 'vue3-clipboard'
+import { VueClipboard } from '@soerenmartius/vue3-clipboard'
 import store from './store'
 
 const app = createApp(App)

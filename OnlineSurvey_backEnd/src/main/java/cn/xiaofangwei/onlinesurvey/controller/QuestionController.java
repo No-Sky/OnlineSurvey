@@ -2,15 +2,18 @@ package cn.xiaofangwei.onlinesurvey.controller;
 
 
 import cn.xiaofangwei.onlinesurvey.entity.Message;
+import cn.xiaofangwei.onlinesurvey.entity.Option;
 import cn.xiaofangwei.onlinesurvey.entity.Question;
 import cn.xiaofangwei.onlinesurvey.service.OptionService;
 import cn.xiaofangwei.onlinesurvey.service.QuestionService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -46,8 +49,12 @@ public class QuestionController {
     }
 
     @PostMapping
-    public Message saveQuestion(Question question) throws SQLException {
+    public Message saveQuestion(@RequestBody Question question) throws SQLException {
         questionService.saveOrUpdate(question);
+        Integer questionId = question.getQuestionId();
+        question.getOptions().forEach(option -> {
+            option.setQuestionId(questionId);
+        });
         optionService.saveOrUpdateBatch(question.getOptions());
         return Message.info();
     }
