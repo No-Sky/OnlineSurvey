@@ -4,6 +4,7 @@ import router from './router'
 import installElementPlus from './plugins/element'
 import { VueClipboard } from '@soerenmartius/vue3-clipboard'
 import store from './store'
+import './assets/iconfont/iconfont.css'
 
 const app = createApp(App)
 installElementPlus(app)

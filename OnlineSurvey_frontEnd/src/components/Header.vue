@@ -39,7 +39,10 @@
                 <el-dropdown-item v-if="isAdmin" command="c"
                   >后台管理</el-dropdown-item
                 >
-                <el-dropdown-item v-if="!isAdmin" command="a">问卷管理</el-dropdown-item>
+                <div v-if="!isAdmin">
+                  <el-dropdown-item  command="d">个人中心</el-dropdown-item>
+                  <el-dropdown-item  command="a">问卷管理</el-dropdown-item>    
+                </div>
                 <el-dropdown-item command="b">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -77,6 +80,9 @@ export default {
     const toManage = () => {
       router.push("/manage");
     };
+    const toProfile = () => {
+      router.push("/profile");
+    };
     const exit = () => {
       sessionStorage.removeItem("Flag");
       sessionStorage.removeItem("User_Data");
@@ -91,6 +97,8 @@ export default {
         exit();
       } else if (command == 'c') {
         router.push("/admin");
+      } else if (command == 'd') {
+        router.push("/profile")
       }
     };
     //判断session中是否存在数据，存在将showname置为true，否则false

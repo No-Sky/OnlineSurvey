@@ -35,5 +35,6 @@ public class User implements Serializable {
     @TableField("statusType")
     private Integer statusType;
 
+    private Integer score;
 
 }

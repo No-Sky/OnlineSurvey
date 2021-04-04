@@ -11,10 +11,19 @@ create table `User` (
     `email` varchar(30) not null,
     `password` varchar(20),
     `username` varchar(20),
-    `statusType` int(1) default 0
+    `statusType` int(1) default 0,
+    `score` int default 0
 );
-
 insert into `User` (`email`, `password`, `username`) values ('xfw_nosky@163.com', 'test123456', 'xfw');
+insert into `User` (`email`, `password`, `username`) values ('xfw.nosky@outlook.com', 'test123456', 'test001');
+
+drop table if exists `User_Score`;
+create table `User_Score` (
+	`usId` int not null auto_increment primary key,
+    `userId` int,
+    `record` int,
+    `desc` varchar(30)
+);
 
 # 问卷
 drop table if exists `Questionnaire`;
@@ -72,6 +81,28 @@ create table `Answer` (
     `questionType` int,
     `answer` int,
     `answerText` varchar(100)
+);
+
+# 标签
+drop table if exists `Tag`;
+create table `Tag` (
+   `tagId` int not null auto_increment primary key,
+   `tag` varchar(15) not null,
+);
+
+drop table if exists `User_Tag`;
+create table `User_Tag` (
+    `utId` int not null primary key,
+    `userId` int,
+    `tagId` int,
+    `value` int
+);
+
+drop table if exists `Questionnaire_Tag`;
+create table `Questionnaire_Tag` (
+    `qtId` int not null primary key,
+    `questionnaireId` int,
+    `tagId` int
 );
 
 select A.optionId,count(B.submitId) as submitCount,A.content 

@@ -11,9 +11,11 @@ import Index from '@/components/Index.vue'
 import Login from '@/components/Login.vue'
 import Register from '@/components/Register.vue'
 import Manage from '@/components/Manage.vue'
+import Profile from '@/components/Profile.vue'
 import ResetPass from '@/components/ResetPass.vue'
 import Display from '@/components/Display.vue'
 import ThankYou from '@/components/ThankYou.vue'
+import wordcloudtest from '@/components/WordCloudTest.vue'
 
 import Admin from '@/components/admin/Admin.vue'
 
@@ -65,6 +67,23 @@ const routes = [
         meta: {
           isLogin: true,
           title: "问卷管理————调研汪"
+        }
+      },
+      {
+        path: '/profile',
+        name: 'Profile',
+        component: Profile,
+        meta: {
+          isLogin: false,
+          title: "个人信息————调研汪"
+        }
+      },
+      {
+        path: '/wordcloudtest',
+        component: wordcloudtest,
+        meta: {
+          isLogin: false,
+          title: "测试————调研汪"
         }
       },
     ]

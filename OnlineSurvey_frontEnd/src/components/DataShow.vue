@@ -9,7 +9,7 @@
     v-loading="loading"
     element-loading-text="生成中..."
   >
-    <div v-if="detail.attrs !== undefined && detail.attrs !== null && detail.attrs.length > 0" class="opera-buttons">
+    <!-- <div v-if="detail.attrs !== undefined && detail.attrs !== null && detail.attrs.length > 0" class="opera-buttons">
       <el-button
         type="primary"
         size="mini"
@@ -20,7 +20,7 @@
       <el-button type="success" size="mini" @click="exportPdf"
         >导出PDF</el-button
       >
-    </div>
+    </div> -->
     <div v-if="detail.attrs == undefined || detail.attrs.length == 0">暂时没有数据</div>
     <el-card class="question" v-for="(item, index) in detail.attrs" :key="index">
       <div slot:header class="clearfix">

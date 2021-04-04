@@ -91,7 +91,7 @@
         </el-form-item>
       </el-form>
       <div style="width: 100%;text-align: right">
-        <el-button style="margin-left: 10px;" @click="openTemp">从模板库创建</el-button>
+        <!-- <el-button style="margin-left: 10px;" @click="openTemp">从模板库创建</el-button> -->
         <el-button style="margin-left: 10px;" @click="dialogShow=false">取消</el-button>
         <el-button type="primary" style="margin-left: 10px;" @click="addWj">确定</el-button>
       </div>
