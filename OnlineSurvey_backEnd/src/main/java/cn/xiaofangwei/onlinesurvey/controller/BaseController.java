@@ -2,16 +2,17 @@ package cn.xiaofangwei.onlinesurvey.controller;
 
 import cn.xiaofangwei.onlinesurvey.entity.Message;
 import cn.xiaofangwei.onlinesurvey.entity.User;
+import cn.xiaofangwei.onlinesurvey.entity.UserScore;
 import cn.xiaofangwei.onlinesurvey.exception.SendEmailException;
 import cn.xiaofangwei.onlinesurvey.service.MailService;
+import cn.xiaofangwei.onlinesurvey.service.UserScoreService;
 import cn.xiaofangwei.onlinesurvey.service.UserService;
 import cn.xiaofangwei.onlinesurvey.utils.GenerateVertifyCode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -25,11 +26,13 @@ public class BaseController {
 
     private final UserService userService;
     private final MailService mailService;
+    private final UserScoreService userScoreService;
 
     @Autowired
-    public BaseController(UserService userService, MailService mailService) {
+    public BaseController(UserService userService, MailService mailService, UserScoreService userScoreService) {
         this.userService = userService;
         this.mailService = mailService;
+        this.userScoreService = userScoreService;
     }
 
     @PostMapping("/login")
@@ -73,9 +76,16 @@ public class BaseController {
         if (!localVertifyCode.equals(vertifyCode)) {
             return Message.error("验证码输入错误，请重试!");
         }
+        user.setScore(10);
         if (!userService.save(user)) {
             return Message.error("注册失败，请重试！");
         }
+        UserScore userScore = new UserScore();
+        userScore.setRecord("+10");
+        userScore.setUserId(user.getUserId());
+        userScore.setOptionTime(LocalDateTime.now());
+        userScore.setDesc("初始用户赠送10积分");
+        userScoreService.save(userScore);
         return Message.info("注册成功，将自动跳转登录页！");
     }
 

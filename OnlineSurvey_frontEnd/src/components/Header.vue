@@ -12,7 +12,19 @@
           >——免费的在线问卷调查系统</span
         >
       </div>
-
+      <div class="menu">
+        <el-menu
+          :default-active="activeIndex"
+          active-text-color="#409eff"
+          class="el-menu-demo"
+          mode="horizontal"
+          @select="handleSelect"
+        >
+          <el-menu-item index="1">问卷广场</el-menu-item>
+          <el-menu-item index="2">问卷管理</el-menu-item>
+          <el-menu-item index="3">个人中心</el-menu-item>
+        </el-menu>
+      </div>
       <div style="float: right; margin-right: 50px; line-height: 60px">
         <!-- 未登录时显示 -->
         <template v-if="!showname">
@@ -32,17 +44,15 @@
         <template v-else>
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="el-dropdown-link">
-              {{ username }}<i class="el-icon-arrow-down el-icon--right"></i>
+              <el-avatar :size="20" :src="avatar"></el-avatar>
+              {{ username }}
+              <i class="el-icon-arrow-down el-icon--right"></i>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item v-if="isAdmin" command="c"
                   >后台管理</el-dropdown-item
                 >
-                <div v-if="!isAdmin">
-                  <el-dropdown-item  command="d">个人中心</el-dropdown-item>
-                  <el-dropdown-item  command="a">问卷管理</el-dropdown-item>    
-                </div>
                 <el-dropdown-item command="b">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -63,8 +73,10 @@ import { loginCheck } from "./api";
 export default {
   name: "Base",
   setup() {
+    const activeIndex = ref("0");
     const showname = ref(false);
-    const username = ref("test");
+    const username = ref("");
+    const avatar = ref("");
     const router = useRouter();
     const store = useStore();
     const isAdmin = ref(false);
@@ -95,12 +107,23 @@ export default {
         toManage();
       } else if (command == "b") {
         exit();
-      } else if (command == 'c') {
+      } else if (command == "c") {
         router.push("/admin");
-      } else if (command == 'd') {
-        router.push("/profile")
+      } else if (command == "d") {
+        router.push("/profile");
       }
     };
+
+    const handleSelect = (key, keyPath) => {
+      if (key == 1) {
+        router.push("/square");
+      } else if (key == 2) {
+        toManage();
+      } else if (key == 3) {
+        router.push("/profile");
+      }
+    };
+
     //判断session中是否存在数据，存在将showname置为true，否则false
     const state = () => {
       let user_session = JSON.parse(sessionStorage.getItem("User_Data"));
@@ -108,6 +131,7 @@ export default {
       if (user_session != null) {
         showname.value = true;
         username.value = user_session.username;
+        avatar.value = require("@assets/images/" + user_session.avatar);
         if (user_session.userId == 1) isAdmin.value = true;
       } else {
         showname.value = false;
@@ -117,24 +141,26 @@ export default {
     const logincheck = () => {
       loginCheck().then((res) => {
         let data = res.data;
+        // console.log(data);
         if (data.code == 0) {
-          exit();
-        } else {
-          sessionStorage.setItem("User_Data", JSON.stringify(data.data));
-          sessionStorage.setItem("Flag", "isLogin");
-          store.dispatch("userStatus", true);
-          state();
+          sessionStorage.removeItem("Flag");
+          sessionStorage.removeItem("User_Data");
+          store.dispatch("userStatus", false);
         }
       });
     };
 
     onMounted(() => {
       state();
+      logincheck();
     });
 
     return {
+      activeIndex,
+      handleSelect,
       showname,
       username,
+      avatar,
       isAdmin,
       toIndex,
       toLogin,
@@ -182,5 +208,27 @@ export default {
   color: #8492a6;
   font-size: 14px;
   margin-bottom: 20px;
+}
+.menu {
+  float: left;
+  width: 300px;
+  margin-left: 36%;
+}
+.el-menu {
+  height: 57px;
+}
+.el-menu.el-menu--horizontal {
+  border-bottom: none;
+}
+.el-menu--horizontal > .el-menu-item {
+  border-bottom: none;
+}
+.el-menu--horizontal > .el-menu-item.is-active {
+  border-bottom: none;
+  height: 57px;
+  color: #409eff;
+}
+.el-menu-item {
+  transition: none;
 }
 </style>

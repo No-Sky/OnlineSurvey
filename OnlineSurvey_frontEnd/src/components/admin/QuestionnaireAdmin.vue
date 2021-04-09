@@ -52,9 +52,9 @@
                 : props.row.distribution
             }}</span>
           </el-form-item>
-          <el-form-item label="标签">
+          <el-form-item class="tags" label="标签">
             <span v-if="props.row.tags == null">暂无标签</span>
-            <el-tag v-for="tag in props.row.tags" :key="tag">{{ tag }}</el-tag>
+            <el-tag v-for="tag in props.row.tags" :key="tag">{{ tag.name }}</el-tag>
           </el-form-item>
           <el-form-item label="描述">
             <span>{{ props.row.description }}</span>
@@ -68,7 +68,7 @@
     :hide-on-single-page="pages == 1"
     background
     :current-page="currentPage"
-    :current-change="changePage"
+    @current-change="changePage"
     layout="prev, pager, next"
     :total="total"
   >
@@ -221,8 +221,9 @@ export default {
       dialogShow.value = false;
     };
 
-    const changePage = () => {
-      local_getUserList(currentPage.value);
+    const changePage = (value) => {
+      currentPage.value = value;
+      local_getUserList(value);
     };
 
     return {
@@ -255,5 +256,8 @@ export default {
   margin-right: 0;
   margin-bottom: 0;
   width: 50%;
+}
+.tags {
+  width: inherit;
 }
 </style>

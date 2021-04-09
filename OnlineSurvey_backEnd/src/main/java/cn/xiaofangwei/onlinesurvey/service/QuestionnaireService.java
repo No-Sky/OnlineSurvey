@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,4 +22,6 @@ public interface QuestionnaireService extends IService<Questionnaire> {
     IPage<Map<String, Object>> selectMapsPage(Page<Questionnaire> questionnairePage, QueryWrapper<Questionnaire> wrapper);
 
     Questionnaire selectQuestionnaireWithQuestion(Integer questionnaireId);
+
+    List<Questionnaire> selectQuestionnaireWithTagsByUser(Integer userId);
 }

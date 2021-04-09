@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @since 2021-02-06
  */
 @Service
-@Transactional
+@Transactional(rollbackFor=Exception.class)
 public class OptionServiceImpl extends ServiceImpl<OptionMapper, Option> implements OptionService {
 
 }

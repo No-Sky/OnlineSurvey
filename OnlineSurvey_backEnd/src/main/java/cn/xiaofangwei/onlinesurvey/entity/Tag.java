@@ -21,7 +21,7 @@ public class Tag {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "tagId", type = IdType.AUTO)
-    private Integer tgaId;
+    private Integer tagId;
 
-    private String tag;
+    private String name;
 }

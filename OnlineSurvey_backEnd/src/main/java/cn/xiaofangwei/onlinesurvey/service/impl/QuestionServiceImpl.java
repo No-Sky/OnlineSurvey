@@ -22,7 +22,7 @@ import java.util.List;
  * @since 2021-02-06
  */
 @Service
-@Transactional
+@Transactional(rollbackFor=Exception.class)
 public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> implements QuestionService {
 
     @Resource

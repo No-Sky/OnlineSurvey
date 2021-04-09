@@ -22,7 +22,7 @@ import java.util.Map;
  * @since 2021-02-06
  */
 @Service
-@Transactional
+@Transactional(rollbackFor=Exception.class)
 public class SubmitInfoServiceImpl extends ServiceImpl<SubmitInfoMapper, SubmitInfo> implements SubmitInfoService {
 
     @Resource

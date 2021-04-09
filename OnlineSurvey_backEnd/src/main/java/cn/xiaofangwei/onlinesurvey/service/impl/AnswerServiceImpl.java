@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -120,14 +121,15 @@ public class AnswerServiceImpl extends ServiceImpl<AnswerMapper, Answer> impleme
         for(AnalysisSelectView a : selectViews) {
             total += a.getSubmitCount();
         }
-        int percent = 0;
+        double percent = 0;
+        DecimalFormat df = new DecimalFormat( "0.00");
         for(AnalysisSelectView a : selectViews) {
             if (total == 0) percent = 0;
-            else percent=((int) (a.getSubmitCount()/total)*10000)/100;
+            else percent=((double)a.getSubmitCount()/total)*100;
             Map<String, Object> map = new HashMap<>();
             map.put("option", a.getContent());
             map.put("count", a.getSubmitCount());
-            map.put("percent", percent);
+            map.put("percent", df.format(percent));
             result.add(map);
         }
         return result;

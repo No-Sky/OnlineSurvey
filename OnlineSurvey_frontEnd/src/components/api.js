@@ -32,11 +32,15 @@ export const resetPassword = data => {
     return axios.post(base_url +'/resetpass', data)
 }
 
-export const loginCheck= data => {
-    return axios.post(base_url +'/logincheck', data)
+export const loginCheck= () => {
+    return axios.get(base_url +'/logincheck')
 }
 
 /** User API */
+export const getUserById = data => {
+    return axios.get(base_url +'/user', data)
+}
+
 export const getUserList = data => {
     return axios.get(base_url +'/user/list', data)
 }
@@ -49,6 +53,10 @@ export const deleteUser = data => {
     return axios.delete(base_url +'/user', data);
 }
 
+export const getUserScoreRecords = data =>{
+    return axios.get(base_url +'/score/list', data)
+}
+
 /**  Questioinnaire API */
 export const getQuestionnaireListbyUser = data => {
     return axios.get(base_url +'/questionnaire/user', data)
@@ -58,12 +66,16 @@ export const getQuestionnaireList = data => {
     return axios.get(base_url +'/questionnaire/list', data)
 }
 
+export const getQuestionnaireListByPublic = data => {
+    return axios.get(base_url +'/questionnaire/square', data)
+}
+
 export const getQuestionnaireById = data => {
     return axios.get(base_url + '/questionnaire', data)
 }
 
-export const addQuestionnaire = data => {
-    return axios.post(base_url + '/questionnaire', data)
+export const addQuestionnaire = (data) => {
+    return axios(data)
 }
 
 export const editQuestionnaire = data => {
@@ -103,4 +115,25 @@ export const getAnswerText = data => {
 
 export const addAnswer = data => {
     return axios(data)
+}
+
+export const analysisExportExcel = data => {
+    return axios(data);
+}
+
+/** Tags API */
+export const deleteQuestionnaireTag = data => {
+    return axios.delete(base_url + '/tags/qt', data)
+}
+
+export const getUserTags = data => {
+    return axios.get(base_url + '/tags/ut', data)
+}
+
+export const addUserTag = data => {
+    return axios.post(base_url + '/tags/ut', data)
+}
+
+export const deleteUserTag = data => {
+    return axios.delete(base_url + '/tags/ut', data)
 }

@@ -54,13 +54,19 @@ public class Questionnaire implements Serializable {
     private Integer distribution;
 
     @TableField("deleteFlag")
-    private Integer deleteFlag;
+    private Boolean deleteFlag;
+
+    @TableField("isPublic")
+    public Boolean isPublic;
 
     @TableField(exist = false)
     private List<Question> questions;
 
     @TableField(exist = false)
     private User user;
+
+    @TableField(exist = false)
+    private List<QuestionnaireTag> tags;
 
 
 }

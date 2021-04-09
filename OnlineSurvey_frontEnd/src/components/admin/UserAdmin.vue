@@ -27,7 +27,7 @@
     :hide-on-single-page="pages == 1"
     background
     :current-page="currentPage"
-    :current-change="changePage"
+    @current-change="changePage"
     layout="prev, pager, next"
     :total="total"
   >
@@ -156,8 +156,9 @@ export default {
       dialogShow.value = false;
     };
 
-    const changePage = () => {
-      local_getUserList(currentPage.value);
+    const changePage = (value) => {
+      currentPage.value = value;
+      local_getUserList(value);
     };
 
     return {

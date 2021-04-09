@@ -3,33 +3,22 @@
 功能：对问卷调查结果的数据进行分析并用图表可视化展示
 -->
 <template>
-  <div
-    id="pdfDom"
-    class="Count"
-    v-loading="loading"
-    element-loading-text="生成中..."
-  >
-    <div
-      v-if="
-        detail.attrs !== undefined &&
-        detail.attrs !== null &&
-        detail.attrs.length > 0
-      "
-      class="opera-buttons"
-    >
-      <el-button
-        type="primary"
-        size="mini"
-        @click="analysisExportExcelBtn"
-        :loading="exportExcelLoading"
-        >导出excel</el-button
+  <div class="Count" v-loading="loading" element-loading-text="生成中...">
+    <div>
+      <a
+        :href="/display/ + questionnaire.attrs.questionnaireId"
+        title="去填写问卷"
       >
-      <!-- <el-button type="success" size="mini" @click="exportPdf"
-        >导出PDF</el-button> -->
+        <h2>{{ questionnaire.attrs.title }}</h2>
+      </a>
+      <div class="desc" v-if="questionnaire.attrs.description != ''">
+        {{ questionnaire.attrs.description }}
+      </div>
     </div>
-    <div v-if="detail.attrs == undefined || detail.attrs.length == 0">
+
+    <!-- <div v-if="detail.attrs == undefined || detail.attrs.length <= 0">
       暂时没有数据
-    </div>
+    </div> -->
     <el-card
       class="question"
       v-for="(item, index) in detail.attrs"
@@ -120,14 +109,6 @@
           @click="lookTextDetail(item.questionId)"
           >详细内容</el-button
         >
-        <el-button
-          size="mini"
-          type="primary"
-          plain
-          @click="answerText2Excel(item.questionId)"
-          :loading="item.questionId == answerText2ExcelQeustionId"
-          >导出excel</el-button
-        >
       </div>
     </el-card>
     <el-dialog title="详细内容" v-model="dialogTableVisible">
@@ -135,12 +116,9 @@
         <el-table-column property="answerText" label="答案"></el-table-column>
       </el-table>
       <el-pagination
-        @size-change="sizeChange"
         @current-change="currentChange"
         :current-page.="currentPage"
-        :page-sizes="[10, 20, 50, 100]"
-        :page-size="pageSize"
-        layout="total, sizes, prev, pager, next, jumper"
+        layout="total, prev, pager, next, jumper"
         :total="total"
       >
       </el-pagination>
@@ -149,18 +127,20 @@
 </template>
 <script>
 import * as echarts from "echarts";
-import { getDataAnalysis, getAnswerText, analysisExportExcel } from "./api";
+import {
+  getQuestionnaireById,
+  getDataAnalysis,
+  getAnswerText,
+  addUserTag,
+} from "./api";
 import { onMounted, reactive, ref } from "vue";
 import { ElMessageBox } from "element-plus";
+import { useRoute } from "vue-router";
+import qs from 'qs';
 
 export default {
-  name: "DataShow",
-  props: {
-    questionnaire: {
-      type: Object,
-    },
-  },
-  setup(props) {
+  name: "Detail",
+  setup() {
     const dialogTableVisible = ref(false);
     const visible = reactive([]);
     const loading = ref(false);
@@ -171,12 +151,27 @@ export default {
     const tableData = reactive({ atrrs: [] });
     const questionId = ref(0);
     const wjId = ref(0);
-    const exportExcelLoading = ref(false);
-    const answerText2ExcelQeustionId = ref(0);
+    const route = useRoute();
+    const questionnaire = reactive({
+      attrs: {},
+    });
+
+    const getQuesrionnaire = (questionnaireId) => {
+      getQuestionnaireById({
+        params: { questionnaireId: questionnaireId },
+      }).then((res) => {
+        let data = res.data;
+        if (data.code == 1) {
+          questionnaire.attrs = data.data;
+          userRelationTags(data.data.tags);
+        } else {
+          console.log(data.description);
+        }
+      });
+    };
 
     // 请求后端数据
     const dataAnalysis = (id) => {
-      // const { questionnaireId, title, description } = props.questionnaire;
       loading.value = true;
       wjId.value = id;
       getDataAnalysis({
@@ -192,9 +187,33 @@ export default {
       //   dialogShow.value = false;
     };
 
+    const userRelationTags = (tags) => {
+      let user_data = JSON.parse(sessionStorage.getItem("User_Data"));
+      if (user_data == null || user_data == undefined) return;
+      for (let i = 0; i < tags.length; i++) {
+        let data = {
+          userId: user_data.userId,
+          tagId: tags[i].tagId,
+        };
+        addUserTag(qs.stringify(data))
+          .then((res) => {
+            let data = res.data;
+            if (data.code == 1) {
+              console.log("关联标签成功");
+            } else {
+              console.log("关联标签失败");
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    };
+
     onMounted(() => {
-      const { questionnaireId, title, description } = props.questionnaire;
-      // console.log(questionnaireId)
+      // const { questionnaireId, title, description } = props.questionnaire;
+      let questionnaireId = route.params.id;
+      getQuesrionnaire(questionnaireId);
       dataAnalysis(questionnaireId);
     });
 
@@ -362,16 +381,16 @@ export default {
     };
 
     // 获取表格数据
-    const getTableData = () => {
+    const getTableData = (page) => {
       getAnswerText({
         params: {
           questionId: questionId.value,
-          currentPage: currentPage.value,
+          currentPage: page,
           pageSize: pageSize.value,
         },
       }).then((res) => {
         let data = res.data;
-        console.log(data);
+        // console.log(data);
         tableData.attrs = data.data.texts;
         total.value = data.data.total;
       });
@@ -385,94 +404,12 @@ export default {
       currentPage.value = 1;
       dialogTableVisible.value = true;
       questionId.value = questionId_;
-      getTableData();
+      getTableData(1);
     };
 
-    const answerText2Excel = (questionId) => {
-      answerText2ExcelQeustionId.value = questionId;
-      // designOpera({
-      //   opera_type: "answer_text_to_excel",
-      //   questionId: questionId
-      // }).then(data => {
-      //   this.doDownload(data.b64data, data.filename, "excel");
-      //   this.answerText2ExcelQeustionId = 0;
-      // });
-    };
-    // 导出pdf
-    const exportPdf = () => {
-      ElMessageBox.alert("正在开发...", "提示");
-    };
-
-    const dataURLtoBlob = (dataurl) => {
-      //          dataurl=dataurl.replace('data:application/json;base64,','')
-      console.log(dataurl);
-      var bstr = atob(dataurl),
-        n = bstr.length,
-        u8arr = new Uint8Array(n);
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-      return u8arr;
-    };
-
-    const doDownload = (data, filename, type) => {
-      var b64data = data; //base64数据
-      // b64data = b64data.replace("data:" + type + ";base64,", "");
-      var bdata = dataURLtoBlob(b64data);
-      if (!b64data) {
-        return;
-      }
-      let url = window.URL.createObjectURL(new Blob([bdata]));
-      let link = document.createElement("a");
-      link.style.display = "none";
-      link.href = url;
-      //        link.download = 'ea7c0cf24153e0cd62bc8b64841fd84d.jpg'; //下载后文件名
-      link.setAttribute("download", filename);
-
-      document.body.appendChild(link);
-      link.click();
-    };
-
-    // 导出excel
-    const analysisExportExcelBtn = () => {
-      exportExcelLoading.value = true;
-      exportExcelLoading.value = false;
-      analysisExportExcel({
-        url: 'http://localhost:10001/answer/analysisExportExcel',
-        
-        responseType: 'blob', 
-        params: { questionnaireId: wjId.value } })
-        .then((res) => {
-          let filename = res.headers['content-disposition'].substring(res.headers['content-disposition'].indexOf('=')+1)
-          if (res.status == 200) {
-            let blob = new Blob([res.data], {
-              type: "application/vnd.ms-excel;charset=utf-8",
-            });
-            const fileReader = new FileReader(); // FileReader 对象允许Web应用程序异步读取存储在用户计算机上的文件的内容
-            fileReader.readAsDataURL(blob); // 开始读取指定的Blob中的内容。一旦完成，result属性中将包含一个data: URL格式的Base64字符串以表示所读取文件的内容
-            fileReader.onload = (event) => {
-              // 处理load事件。该事件在读取操作完成时触发
-              // 新建个下载的a标签，完成后移除。
-              let a = document.createElement("a");
-              //如果使用兼容性高得xlsx,后端代码需要设置类型为XSSF，params.setType(ExcelType.XSSF);
-              a.setAttribute("download", decodeURI(filename));
-              a.href = event.target.result;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-            };
-          }
-        })
-        .catch((err) => {
-          console.warn(err);
-        });
-    };
-
-    const sizeChange = () => {
-      getTableData();
-    };
-    const currentChange = () => {
-      getTableData();
+    const currentChange = (value) => {
+      currentPage.value = value;
+      getTableData(value);
     };
 
     return {
@@ -486,8 +423,6 @@ export default {
       tableData,
       questionId,
       wjId,
-      exportExcelLoading,
-      answerText2ExcelQeustionId,
       dataAnalysis,
       setImg,
       setPar,
@@ -497,17 +432,20 @@ export default {
       setText,
       getTableData,
       lookTextDetail,
-      answerText2Excel,
-      analysisExportExcelBtn,
-      doDownload,
-      dataURLtoBlob,
-      sizeChange,
       currentChange,
+      questionnaire,
     };
   },
 };
 </script>
 <style scoped>
+a {
+  text-decoration: none;
+  color: #333333;
+}
+a:hover {
+  color: cornflowerblue;
+}
 .Count {
 }
 .Count .question {
@@ -537,5 +475,14 @@ export default {
 }
 .opera-buttons {
   padding: 10px;
+}
+.desc {
+  color: #606266;
+  padding: 0 10px 10px 10px;
+  border-bottom: 1px solid #409eff;
+  font-size: 15px;
+  width: 500px;
+  text-align: center;
+  margin: auto;
 }
 </style>

@@ -3,6 +3,8 @@ package cn.xiaofangwei.onlinesurvey.controller;
 
 import cn.xiaofangwei.onlinesurvey.entity.Message;
 import cn.xiaofangwei.onlinesurvey.entity.User;
+import cn.xiaofangwei.onlinesurvey.entity.UserScore;
+import cn.xiaofangwei.onlinesurvey.service.UserScoreService;
 import cn.xiaofangwei.onlinesurvey.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -10,9 +12,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
@@ -29,9 +30,12 @@ public class UserController {
 
     private final UserService userService;
 
+    private final UserScoreService userScoreService;
+
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserScoreService userScoreService) {
         this.userService = userService;
+        this.userScoreService = userScoreService;
     }
 
     @GetMapping

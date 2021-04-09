@@ -2,7 +2,9 @@
   <div id="profile-main">
     <el-card id="main-left" shadow="always">
       <el-avatar :size="100" :src="userInfo.attrs.avatar"></el-avatar>
-      <div id="username"><span>username</span></div>
+      <div id="username">
+        <span>{{ userInfo.attrs.username }}</span>
+      </div>
       <div class="tab">
         <div
           @click="changeView('base-info')"
@@ -39,7 +41,7 @@
                   class="avatars-item"
                   :size="40"
                   :src="item.avatar"
-                  @click="changeAvatar(item.avatar)"
+                  @click="changeAvatar(item.avatar, index)"
                 ></el-avatar>
               </div>
               <el-button size="small" @click="alterAvatarBtn"
@@ -49,7 +51,9 @@
           </div>
           <div class="base-info-item">
             <span class="base-info-lable">邮箱</span>
-            <div><span>xfw.nosky@163.com</span></div>
+            <div>
+              <span>{{ baseInfo.attrs.email }}</span>
+            </div>
           </div>
           <div class="base-info-item">
             <div>
@@ -58,7 +62,7 @@
                 <el-form-item>
                   <el-input
                     style="width: 200px; display: block"
-                    v-model="userInfo.attrs.password"
+                    v-model="baseInfo.attrs.password"
                     type="password"
                   ></el-input>
                   <el-button @click="changePasswordBtn" size="small"
@@ -77,12 +81,12 @@
         <div>
           <el-tag
             :key="tag"
-            v-for="tag in dynamicTags.attrs"
+            v-for="tag in userTags.attrs"
             closable
             :disable-transitions="false"
-            @close="handleClose(tag)"
+            @close="handleClose(tag.utId)"
           >
-            {{ tag }}
+            {{ tag.name }}
           </el-tag>
           <el-input
             class="input-new-tag"
@@ -109,24 +113,26 @@
         <div>
           <div style="margin-bottom: 4%; font-size: 18px">
             <span style="color: #409eff; margin-right: 5%">个人积分</span>
-            <span>100</span>
+            <span>{{ baseInfo.attrs.score }}</span>
           </div>
           <div>
             <span style="font-size: 18px; color: #409eff">积分记录</span>
             <el-table :data="scoreRecords.attrs" stripe style="width: 100%">
               <el-table-column type="index" label="序号"></el-table-column>
-              <el-table-column prop="date" label="日期" width="180">
+              <el-table-column
+                prop="optionTime"
+                label="日期"
+                :formatter="optionTimeFormat"
+              >
               </el-table-column>
-              <el-table-column prop="record" label="记录" width="180">
-              </el-table-column>
-              <el-table-column prop="desc" label="操作描述" width="180">
-              </el-table-column>
+              <el-table-column prop="record" label="记录"> </el-table-column>
+              <el-table-column prop="desc" label="操作描述"> </el-table-column>
             </el-table>
             <el-pagination
               :hide-on-single-page="pages == 1"
               background
               :current-page="currentPage"
-              :current-change="changePage"
+              @current-change="changePage"
               layout="prev, pager, next"
               :total="total"
             >
@@ -139,28 +145,52 @@
 </template>
 
 <script>
-import { onMounted, ref, reactive, nextTick } from "vue";
+import { onMounted, ref, reactive, nextTick, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 import * as echarts from "echarts";
 import "echarts-wordcloud";
 import { ElMessage, ElMessageBox } from "element-plus";
+import {
+  getUserById,
+  editUser,
+  getUserTags,
+  addUserTag,
+  deleteUserTag,
+  getUserScoreRecords,
+} from "./api.js";
+import qs from "qs";
+import { FormatDate } from "../filters/index.js";
 
 export default {
   setup() {
+    const router = useRouter();
+    const store = useStore();
     const userInfo = reactive({
       attrs: {
-        avatar: require("@assets/images/boy.png"),
-        password: "123456",
+        avatar: "",
+        password: "",
       },
     });
     const baseInfo = reactive({
       attrs: {
-        avatar: require("@assets/images/boy.png"),
+        avatar: "",
       },
     });
     const changeId = ref(0);
     const pages = ref(0);
     const total = ref(0);
     const currentPage = ref(1);
+    const avatarsList = ref([
+      "boy.png",
+      "girl.png",
+      "love.png",
+      "plant.png",
+      "rain.png",
+      "driven.png",
+      "group.png",
+    ]);
+    const avatarIndex = ref(0);
     const avatars = reactive({
       attrs: [
         { avatar: require("@assets/images/boy.png") },
@@ -173,101 +203,122 @@ export default {
       ],
     });
     const tagsChartRef = ref(null);
-    const tags = reactive({
-      attrs: [
-        { name: "标签一", type: "" },
-        { name: "标签二", type: "success" },
-        { name: "标签三", type: "info" },
-        { name: "标签四", type: "warning" },
-        { name: "标签五", type: "danger" },
-      ],
+    const userTags = reactive({
+      attrs: [],
     });
-
-    const dynamicTags = reactive({ attrs: ["标签一", "标签二", "标签三"] });
+    const tagsChart = reactive({
+      attrs: [],
+    });
     const inputVisible = ref(false);
     const inputValue = ref("");
     const saveTagInput = ref(null);
 
     const scoreRecords = reactive({
-      attrs: [
-        {
-          date: Date.now(),
-          record: 5,
-          desc: "回答问卷",
-        },
-        {
-          date: Date.now(),
-          record: 5,
-          desc: "回答问卷",
-        },
-      ],
+      attrs: [],
     });
 
-    const optionThird = reactive({
-      attrs: {
-        tooltip: {
-          show: true,
+    const deepClone = (obj) => {
+      let _obj = JSON.stringify(obj);
+      let objClone = JSON.parse(_obj);
+      return objClone;
+    };
+
+    const getUserInfo = (userId) => {
+      getUserById({
+        params: {
+          userId: userId,
         },
-        series: [
-          {
-            type: "wordCloud",
-            gridSize: 15,
-            sizeRange: [16, 80],
-            rotationRange: [-120, 120],
-            shape: "pentagon",
-            left: "center",
-            top: "center",
-            width: "100%",
-            height: "100%",
-            data: [
-              { value: 2000, name: "文字" },
-              { value: 400, name: "图片" },
-              { value: 1000, name: "参考" },
-              { value: 855, name: "音视频" },
-              { value: 343, name: "新媒体" },
-              { value: 343, name: "测试1" },
-              { value: 43, name: "测试2" },
-              { value: 543, name: "测试3" },
-              { value: 333, name: "测试4" },
-              { value: 323, name: "测试5" },
-              { value: 33, name: "测试6" },
-              { value: 13, name: "测试7" },
-              { value: 543, name: "测试8" },
-              { value: 66, name: "测试9" },
-              { value: 666, name: "测试10" },
-            ],
-            autoSize: {
-              enable: true,
-              minSize: 16,
-            },
-            textStyle: {
-              normal: {
-                color: function () {
-                  return (
-                    "rgb(" +
-                    [
-                      Math.round(Math.random() * 160),
-                      Math.round(Math.random() * 160),
-                      Math.round(Math.random() * 160),
-                    ].join(",") +
-                    ")"
-                  );
+      })
+        .then((res) => {
+          let data = res.data;
+          console.log(data);
+          if (data.code == 1) {
+            userInfo.attrs = data.data;
+            userInfo.attrs.avatar = require("@assets/images/" +
+              data.data.avatar);
+            baseInfo.attrs = deepClone(userInfo.attrs);
+          } else {
+            console.log(data.descriptin);
+          }
+        })
+        .catch((error) => {
+          if (error) {
+            console.log(error);
+            ElMessage.error("网络错误，请重试！");
+          }
+        });
+    };
+
+    const local_getUserTags = (userId) => {
+      getUserTags({ params: { userId: userId } }).then((res) => {
+        let data = res.data;
+        // console.log(data);
+        if (data.code == 1) {
+          userTags.attrs = data.data;
+          data.data.forEach((ut) => {
+            let tag = {
+              name: ut.name,
+              value: ut.value,
+            };
+            tagsChart.attrs.push(tag);
+          });
+          let optionThird = {
+            attrs: {
+              tooltip: {
+                show: true,
+              },
+              series: [
+                {
+                  type: "wordCloud",
+                  gridSize: 15,
+                  sizeRange: [16, 80],
+                  rotationRange: [-120, 120],
+                  shape: "pentagon",
+                  left: "center",
+                  top: "center",
+                  width: "100%",
+                  height: "100%",
+                  data: tagsChart.attrs,
+                  autoSize: {
+                    enable: true,
+                    minSize: 16,
+                  },
+                  textStyle: {
+                    normal: {
+                      color: function () {
+                        return (
+                          "rgb(" +
+                          [
+                            Math.round(Math.random() * 160),
+                            Math.round(Math.random() * 160),
+                            Math.round(Math.random() * 160),
+                          ].join(",") +
+                          ")"
+                        );
+                      },
+                    },
+                    drawOutOfBound: true,
+                    emphasis: {
+                      shadowBlur: 10,
+                      shadowColor: "#333",
+                    },
+                  },
                 },
-              },
-              drawOutOfBound: true,
-              emphasis: {
-                shadowBlur: 10,
-                shadowColor: "#333",
-              },
+              ],
             },
-          },
-        ],
-      },
-    });
+          };
+          let chart = echarts.init(tagsChartRef.value);
+          chart.setOption(optionThird.attrs);
+        }
+      });
+    };
 
     onMounted(() => {
-      let chart = echarts.init(tagsChartRef.value);
-      chart.setOption(optionThird.attrs);
+      let user_session = JSON.parse(sessionStorage.getItem("User_Data"));
+      let userId = user_session.userId;
+      getUserInfo(userId);
+      local_getUserTags(userId);
+      local_getUserScoreRecords(userId);
     });
 
     const changeView = (id) => {
@@ -292,12 +343,16 @@ export default {
       }
     };
 
-    const changePage = () => {
+    const changePage = (value) => {
       //远程获取
+      currentPage.value = value;
+      local_getUserScoreRecords(baseInfo.attrs.userId, value);
     };
 
-    const changeAvatar = (avatar) => {
+    const changeAvatar = (avatar, index) => {
       baseInfo.attrs.avatar = avatar;
+      avatarIndex.value = index;
+      console.log(avatarsList.value[avatarIndex.value]);
     };
     const alterAvatarBtn = () => {
       ElMessageBox.confirm("确认修改头像？", "提示", {
@@ -306,8 +361,24 @@ export default {
         type: "warning",
       })
         .then(() => {
-          userInfo.attrs.avatar = baseInfo.attrs.avatar;
-          ElMessage.success("修改成功！");
+          let userData = {
+            _method: "PUT",
+            userId: userInfo.attrs.userId,
+            avatar: avatarsList.value[avatarIndex.value],
+          };
+          editUser(qs.stringify(userData)).then((res) => {
+            let data = res.data;
+            // console.log(data);
+            if (data.code == 1) {
+              ElMessage.success("修改成功！");
+              let user_session = JSON.parse(sessionStorage.getItem("User_Data"));
+              user_session.avatar = avatarsList.value[avatarIndex.value];
+              sessionStorage.setItem("User_Data", JSON.stringify(user_session));
+              location.reload();
+            } else {
+              ElMessage.success("修改失败！");
+            }
+          });
         })
         .catch(() => {
           // ElMessage.warning("修改失败！");
@@ -315,22 +386,55 @@ export default {
     };
 
     const changePasswordBtn = () => {
+      if (baseInfo.attrs.password == userInfo.attrs.password) {
+        return;
+      }
       ElMessageBox.confirm("确认修改密码？", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",
       })
         .then(() => {
-          //修改密码操作
-          ElMessage.success("修改成功！");
+          let userData = {
+            _method: "PUT",
+            userId: userInfo.attrs.userId,
+            password: baseInfo.attrs.password,
+          };
+          editUser(qs.stringify(userData)).then((res) => {
+            let data = res.data;
+            console.log(data);
+            if (data.code == 1) {
+              ElMessage.success("修改成功！已退出请重新登录！");
+              sessionStorage.removeItem("Flag");
+              sessionStorage.removeItem("User_Data");
+              store.dispatch("userStatus", false);
+              window.location.reload();
+              router.push("/login");
+            } else {
+              ElMessage.success("修改失败！");
+            }
+          });
         })
         .catch(() => {
-          ElMessage.warning("修改失败！");
+          // ElMessage.warning("修改失败！");
         });
     };
 
-    const handleClose = (tag) => {
-      dynamicTags.attrs.splice(dynamicTags.attrs.indexOf(tag), 1);
+    const handleClose = (utId) => {
+      //.attrs.splice(dynamicTags.attrs.indexOf(tag), 1);
+      let deleteData = {
+        _method: "DELETE",
+        params: {
+          utId: utId,
+        },
+      };
+      deleteUserTag(deleteData).then((res) => {
+        let data = res.data;
+        if (data.code == 1) {
+          ElMessage.success("删除成功");
+          local_getUserTags(baseInfo.attrs.userId);
+        }
+      });
     };
 
     const showInput = () => {
@@ -360,14 +464,50 @@ export default {
         type: "warning",
       })
         .then(() => {
-          dynamicTags.attrs.push(inputValue_);
-          inputVisible.value = false;
-          inputValue.value = "";
-          ElMessage.success("添加成功！");
+          let userTag = {
+            userId: baseInfo.attrs.userId,
+            name: inputValue_,
+          };
+          addUserTag(qs.stringify(userTag)).then((res) => {
+            let data = res.data;
+            if (data.code == 1) {
+              inputVisible.value = false;
+              inputValue.value = "";
+              ElMessage.success("添加成功！");
+              local_getUserTags(baseInfo.attrs.userId);
+            } else if (data.code == 2) {
+              inputVisible.value = false;
+              inputValue.value = "";
+              ElMessage.warning(data.description);
+            } else {
+              inputVisible.value = false;
+              inputValue.value = "";
+              ElMessage.success("添加失败！");
+            }
+          });
         })
         .catch(() => {
           // ElMessage.warning("添加失败！");
         });
+    };
+
+    const local_getUserScoreRecords = (userId, page) => {
+      getUserScoreRecords({
+        params: { userId: userId, page: currentPage.value },
+      }).then((res) => {
+        let data = res.data;
+        console.log(data);
+        if (data.code == 1) {
+          scoreRecords.attrs = data.data.records;
+          pages.value = data.data.pages;
+          total.value = data.data.total;
+        }
+      });
+    };
+
+    const optionTimeFormat = (row, cellValue) => {
+      // console.log(row.optionTime);
+      return row.optionTime.substring(0, row.optionTime.lastIndexOf(':', row.optionTime.lastIndexOf(':')-1));
     };
 
     return {
@@ -380,13 +520,12 @@ export default {
       changePage,
       avatars,
       tagsChartRef,
-      tags,
       scoreRecords,
       changeView,
       changeAvatar,
       alterAvatarBtn,
       changePasswordBtn,
-      dynamicTags,
+      userTags,
       inputVisible,
       inputValue,
       handleClose,
@@ -394,6 +533,7 @@ export default {
       handleInputCancel,
       showInput,
       saveTagInput,
+      optionTimeFormat,
     };
   },
 };

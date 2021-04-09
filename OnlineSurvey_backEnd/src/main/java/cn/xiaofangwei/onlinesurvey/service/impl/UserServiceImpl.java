@@ -24,7 +24,7 @@ import java.util.Map;
  * @since 2021-02-06
  */
 @Service
-@Transactional
+@Transactional(rollbackFor=Exception.class)
 class UserSericeImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource

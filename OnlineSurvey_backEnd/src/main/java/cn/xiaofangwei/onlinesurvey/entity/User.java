@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
+import java.util.List;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -32,9 +34,14 @@ public class User implements Serializable {
 
     private String username;
 
+    private String avatar;
+
     @TableField("statusType")
     private Integer statusType;
 
     private Integer score;
+
+    @TableField(exist = false)
+    private List<UserTag> userTags;
 
 }

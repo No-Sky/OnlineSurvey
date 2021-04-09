@@ -15,6 +15,8 @@ import Profile from '@/components/Profile.vue'
 import ResetPass from '@/components/ResetPass.vue'
 import Display from '@/components/Display.vue'
 import ThankYou from '@/components/ThankYou.vue'
+import Square from '@/components/Square.vue'
+import Detail from '@/components/Detail.vue'
 
 import Admin from '@/components/admin/Admin.vue'
 
@@ -73,8 +75,24 @@ const routes = [
         name: 'Profile',
         component: Profile,
         meta: {
-          isLogin: false,
+          isLogin: true,
           title: "个人信息————调研汪"
+        }
+      },
+      {
+        path: '/square',
+        name: 'Square',
+        component: Square,
+        meta: {
+          title: "问卷广场————调研汪"
+        }
+      },
+      {
+        path: '/detail/:id',
+        name: 'Detail',
+        component: Detail,
+        meta: {
+          title: "问卷详情————调研汪"
         }
       },
     ]

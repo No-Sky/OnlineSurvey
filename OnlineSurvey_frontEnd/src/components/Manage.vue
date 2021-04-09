@@ -12,19 +12,19 @@
             <el-button icon="el-icon-plus" type="text" class="rightButton" @click="addQuestionnaireBtn"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="编辑问卷" placement="bottom">
-            <el-button v-if="nowSelect.attrs != null" icon="el-icon-edit" type="text" class="rightButton" @click="editWj" :disabled="nowSelect.attrs.questionnaireId==0||nowSelect.attrs.questionnaireId==null"></el-button>
+            <el-button  icon="el-icon-edit" type="text" class="rightButton" @click="editWj" :disabled="nowSelect.attrs == undefined "></el-button>
           </el-tooltip>
-          <el-tooltip class="item" v-if="nowSelect.attrs != null" effect="dark" :content="nowSelect.attrs.statusType==0?'发布问卷':'暂停问卷'" placement="bottom" >
-            <el-button :icon="nowSelect.attrs.statusType==0?'el-icon-video-play':'el-icon-video-pause'"  type="text" class="rightButton" @click="pushWj" :disabled="nowSelect.attrs.questionnaireId==null"></el-button>
+          <el-tooltip class="item" v-if="nowSelect.attrs != undefined" effect="dark" :content="nowSelect.attrs.statusType==0?'发布问卷':'暂停问卷'" placement="bottom" >
+            <el-button :icon="nowSelect.attrs.statusType==0?'el-icon-video-play':'el-icon-video-pause'"  type="text" class="rightButton" @click="pushWj" :disabled="nowSelect.attrs == undefined"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="预览问卷" placement="bottom">
-            <el-button icon="el-icon-view" type="text" class="rightButton" @click="previewWj" :disabled="nowSelect.attrs.questionnaireId==0||nowSelect.attrs.questionnaireId==null"></el-button>
+            <el-button icon="el-icon-view" type="text" class="rightButton" @click="previewWj" :disabled="nowSelect.attrs == undefined"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="删除问卷" placement="bottom">
-            <el-button icon="el-icon-delete" type="text" class="rightButton" @click="deleteWj" :disabled="nowSelect.attrs.questionnaireId==0||nowSelect.attrs.questionnaireId==null"></el-button>
+            <el-button icon="el-icon-delete" type="text" class="rightButton" @click="deleteWj" :disabled="nowSelect.attrs == undefined"></el-button>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" content="分享问卷" placement="bottom">
-            <el-button icon="el-icon-share" type="text" class="rightButton" @click="shareWj" :disabled="nowSelect.attrs.questionnaireId==0||nowSelect.attrs.questionnaireId==null"></el-button>
+            <el-button icon="el-icon-share" type="text" class="rightButton" @click="shareWj" :disabled="nowSelect.attrs == undefined"></el-button>
           </el-tooltip>
           <!--<el-tooltip class="item" effect="dark" content="添加模板库" placement="bottom">-->
             <!--<el-button icon="el-icon-upload" type="text"class="rightButton" @click="addTemp"></el-button>-->
@@ -34,7 +34,7 @@
         <!--左侧导航栏-->
         <el-menu :default-active="defaultActive.toString()" v-loading="loading" class="menu">
           <!--问卷列表-->
-          <div style="width:100%;text-align: center;font-size: 15px;line-height: 20px;margin-top: 20px;color: #303133" v-if="nowSelect.attrs.questionnaireId==0||nowSelect.attrs.questionnaireId==null">
+          <div style="width:100%;text-align: center;font-size: 15px;line-height: 20px;margin-top: 20px;color: #303133" v-if="nowSelect.attrs == undefined">
             点击上方&nbsp;+&nbsp;创建第一个问卷
           </div>
           <el-menu-item v-for="(item,index) in wjList" :index="(index+1).toString()" :key="index" @click="wjClick(item.questionnaireId,index)">
@@ -60,14 +60,14 @@
             <el-tab-pane label="问卷设计" name="wjsj">
               <!--内容区域-->
               <div class="content">
-                <div v-show="nowSelect.attrs.questionnaireId==0||nowSelect.attrs.questionnaireId==null">请先选择问卷</div>
-                <design ref="designRef" :questionnaire="nowSelect.attrs" :key="nowSelect.attrs.questionnaireId" v-if="nowSelect.attrs.questionnaireId!=0&&nowSelect.attrs.questionnaireId!=null"></design>
+                <div v-show="nowSelect.attrs == undefined">请先选择问卷</div>
+                <design ref="designRef" :questionnaire="nowSelect.attrs" :key="nowSelect.attrs.questionnaireId" v-if="nowSelect.attrs != undefined&&nowSelect.attrs.questionnaireId!=null"></design>
               </div>
             </el-tab-pane>
             <el-tab-pane label="回答统计" name="hdtj">
               <div class="content" ref="pdf">
-                <div v-show="nowSelect.attrs.questionnaireId==0||nowSelect.attrs.questionnaireId==null">请先选择问卷</div>
-                <data-show ref="dataShowRef" :questionnaire="nowSelect.attrs" :key="nowSelect.attrs.questionnaireId" v-if="nowSelect.attrs.questionnaireId!=0&&nowSelect.attrs.questionnaireId!=null"></data-show>
+                <div v-show="nowSelect.attrs == undefined">请先选择问卷</div>
+                <data-show ref="dataShowRef" :questionnaire="nowSelect.attrs" :key="nowSelect.attrs.questionnaireId" v-if="nowSelect.attrs != undefined&&nowSelect.attrs.questionnaireId!=null"></data-show>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -85,9 +85,35 @@
         </el-form-item>
         <el-form-item label="截止时间" style="width: 100%;">
           <el-input v-model="willAddWj.stopTime" type="datetime-local"></el-input>
+          <span>默认不限制截止时间</span>
         </el-form-item>
         <el-form-item label="分发数量" style="width: 100%;">
-          <el-input v-model="willAddWj.distribution" type="number" placeholder="默认不限制数量"></el-input>
+          <el-input v-model="willAddWj.distribution" type="number" min="0"></el-input>
+          <span>默认为0时不限制分发数量</span>
+        </el-form-item>
+        <el-form-item label="是否公开" >
+          <el-switch v-model="willAddWj.isPublic"></el-switch>
+        </el-form-item>
+        <el-form-item label="标签" style="width: 100%;">
+          <el-tag
+            :key="tag.name"
+            v-for="tag in willAddWj.tags"
+            closable
+            :disable-transitions="false"
+            @close="handleClose(tag.qtId)">
+            {{tag.name}}
+          </el-tag>
+          <el-input
+            class="input-new-tag"
+            v-if="inputVisible"
+            v-model="inputValue"
+            ref="saveTagInput"
+            size="small"
+            @keyup.enter="handleInputConfirm"
+            @blur="handleInputCancel"
+          >
+          </el-input>
+          <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
         </el-form-item>
       </el-form>
       <div style="width: 100%;text-align: right">
@@ -145,10 +171,11 @@ import {
   editQuestionnaire,
   deleteQuestionnaire,
   getTempPage,
+  deleteQuestionnaireTag,
 } from "./api";
 import Design from "./Design.vue";
 import DataShow from "./DataShow.vue";
-import { onMounted, reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import qs from "qs";
 import QRCode from "qrcode";
@@ -182,6 +209,8 @@ export default {
       createTime: null,
       stopTime: null,
       distribution: 0,
+      isPublic: false,
+      tags: [],
     });
     const shareInfo = reactive({
       url: "",
@@ -200,7 +229,9 @@ export default {
             statusType: 0,
             createTime: null,
             stopTime: null,
-            distribution: null,
+            distribution: 0,
+            isPublic: false,
+            tags: [],
           },
         };
       }
@@ -214,9 +245,60 @@ export default {
           createTime: now.createTime,
           stopTime: now.stopTime,
           distribution: now.distribution,
+          isPublic: now.isPublic,
+          tags: now.tags,
         },
       };
     });
+
+    const inputVisible = ref(false);
+    const inputValue = ref("");
+    const saveTagInput = ref(null);
+
+    const handleClose = (qtId) => {
+      willAddWj.value.tags.splice(willAddWj.value.tags.indexOf(qtId), 1);
+      let deleteData = {
+        _method: "DELETE",
+        params: {
+          qtId: qtId,
+        },
+      };
+      deleteQuestionnaireTag(deleteData).then((res) => {
+        let data = res.data;
+        if (data.code == 1) {
+          ElMessage.success("删除标签成功");
+        } else {
+          ElMessage.success("删除标签失败");
+        }
+      });
+    };
+
+    const showInput = () => {
+      inputVisible.value = true;
+      nextTick(() => {
+        if (saveTagInput.value) {
+          saveTagInput.value.focus();
+        }
+      });
+    };
+
+    const handleInputCancel = () => {
+      inputVisible.value = false;
+      inputValue.value = "";
+    };
+
+    const handleInputConfirm = () => {
+      let inputValue_ = inputValue.value;
+      if (!inputValue_) {
+        inputVisible.value = false;
+        inputValue.value = "";
+        return;
+      }
+      let tag = { name: inputValue_ };
+      willAddWj.value.tags.push(tag);
+      inputVisible.value = false;
+      inputValue.value = "";
+    };
 
     const user_session = JSON.parse(sessionStorage.getItem("User_Data"));
 
@@ -245,7 +327,7 @@ export default {
         },
       }).then((res) => {
         let data = res.data;
-        // console.log(data);
+        console.log(data);
         wjList.value = data.data;
         nowSelect.attrs = wjList.value[0];
         loading.value = false;
@@ -266,35 +348,57 @@ export default {
       willAddWj.value.createTime = null;
       willAddWj.value.stopTime = null;
       willAddWj.value.distribution = 0;
+      willAddWj.value.isPublic = false;
+      willAddWj.value.tags = [];
     };
 
     //添加问卷
     const addWj = () => {
-      if (willAddWj.value.title == "") {
-        ElMessage.error("标题不能为空");
-        return;
-      }
-      let questionnaireData = {
-        userId: willAddWj.value.userId,
-        questionnaireId: willAddWj.value.questionnaireId,
-        title: willAddWj.value.title,
-        description: willAddWj.value.description,
-        statusType: willAddWj.value.statusType,
-        createTime: Date.now,
-        stopTime: willAddWj.value.stopTime,
-        distribution: willAddWj.value.distribution,
-      };
-      addQuestionnaire(qs.stringify(questionnaireData)).then((res) => {
-        let data = res.data;
-        // console.log(data);
-        if (data.code == 1) {
-          ElMessage.success("保存成功");
-          getWjList();
-        } else {
-          ElMessage.error(data.description);
+      ElMessageBox.confirm("创建问卷将扣除2积分，是否继续", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(() => {
+        if (willAddWj.value.title == "") {
+          ElMessage.error("标题不能为空");
+          return;
         }
+        let questionnaireData = {
+          userId: willAddWj.value.userId,
+          questionnaireId: willAddWj.value.questionnaireId,
+          title: willAddWj.value.title,
+          description: willAddWj.value.description,
+          statusType: willAddWj.value.statusType,
+          createTime: Date.now,
+          stopTime: willAddWj.value.stopTime,
+          distribution: willAddWj.value.distribution,
+          isPublic: willAddWj.value.isPublic,
+          tags: willAddWj.value.tags,
+        };
+        addQuestionnaire({
+          url: "http://localhost:10001/questionnaire",
+          method: "POST",
+          data: JSON.stringify(questionnaireData),
+          dataType: "json",
+          headers: {
+            "Content-Type": "application/json;charset=UTF-8",
+          },
+        })
+          .then((res) => {
+            let data = res.data;
+            // console.log(data);
+            if (data.code == 1) {
+              ElMessage.success("保存成功");
+              getWjList();
+            } else {
+              ElMessage.error(data.description);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+        dialogShow.value = false;
       });
-      dialogShow.value = false;
     };
 
     //发布问卷
@@ -346,11 +450,17 @@ export default {
       window.open(shareInfo.url);
     };
 
+    const deepClone = (obj) => {
+      let _obj = JSON.stringify(obj);
+      let objClone = JSON.parse(_obj);
+      return objClone;
+    };
+
     // 编辑问卷
     const editWj = () => {
       dialogShow.value = true;
       dialogTitle.value = "编辑问卷";
-      willAddWj.value = nowSelect.attrs;
+      willAddWj.value = deepClone(nowSelect.attrs);
     };
 
     //删除问卷
@@ -369,22 +479,24 @@ export default {
           _method: "DELETE",
           params: { questionnaireId: nowSelect.attrs.questionnaireId },
         };
-        deleteQuestionnaire(deleteData).then((res) => {
-          let data = res.data;
-          console.log(data);
-          if (data.code == 1) {
-            ElMessage.success("删除成功");
-            loading.value = false;
-            getWjList();
-            defaultActive.value = 1;
-          } else {
-            ElMessage.error(data.description);
-          }
-        }).catch(error => {
-          if (error) {
-            ElMessage.error("系统错误，请重试！")
-          }
-        });
+        deleteQuestionnaire(deleteData)
+          .then((res) => {
+            let data = res.data;
+            console.log(data);
+            if (data.code == 1) {
+              ElMessage.success("删除成功");
+              loading.value = false;
+              getWjList();
+              defaultActive.value = 1;
+            } else {
+              ElMessage.error(data.description);
+            }
+          })
+          .catch((error) => {
+            if (error) {
+              ElMessage.error("系统错误，请重试！");
+            }
+          });
       });
     };
 
@@ -467,6 +579,13 @@ export default {
       deleteWj,
       makeQrcode,
       openTemp,
+      inputVisible,
+      inputValue,
+      handleClose,
+      handleInputConfirm,
+      handleInputCancel,
+      showInput,
+      saveTagInput,
     };
   },
 
@@ -577,5 +696,20 @@ export default {
   line-height: 50px;
   text-align: center;
   border-bottom: 1px solid #eee;
+}
+.el-form-item {
+  margin-bottom: 2px;
+}
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  /* vertical-align: bottom; */
 }
 </style>

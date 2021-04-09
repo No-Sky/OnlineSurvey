@@ -15,9 +15,34 @@
         <result column="deleteFlag" property="deleteFlag" />
     </resultMap>
 
+<!--    <resultMap id="BaseResultMapWithTags" type="cn.xiaofangwei.onlinesurvey.entity.Questionnaire">-->
+<!--        <id column="questionnaireId" property="questionnaireId" />-->
+<!--        <result column="userId" property="userId" />-->
+<!--        <result column="title" property="title" />-->
+<!--        <result column="description" property="description" />-->
+<!--        <result column="statusType" property="statusType" />-->
+<!--        <result column="createTime" property="createTime" />-->
+<!--        <result column="stopTime" property="stopTime" />-->
+<!--        <result column="distribution" property="distribution" />-->
+<!--        <result column="deleteFlag" property="deleteFlag" />-->
+<!--        <collection property="tags" ofType="cn.xiaofangwei.onlinesurvey.entity.QuestionnaireTag">-->
+<!--            <id column="qtId" property="qtId"/>-->
+<!--            <result column="questionnaireId" property="questionnaireId"></result>-->
+<!--            <result column="tagId" property="tagId"></result>-->
+<!--            <result column="tag" property="tag"></result>-->
+<!--        </collection>-->
+<!--    </resultMap>-->
+
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         questionnaireId, userId, title, description, statusType, createTime, stopTime, distribution, deleteFlag
     </sql>
+
+<!--    <select id="selectPageVo" resultMap="BaseResultMapWithTags">-->
+<!--        select q.*, qt.*, t.tag from Questionnaire as q-->
+<!--         left join `User` as u on q.userId = u.userId-->
+<!--         left join Questionnaire_Tag as qt on q.questionnaireId = qt.questionnaireId-->
+<!--         left join Tag as t on qt.tagId = t.tagId;-->
+<!--    </select>-->
 
 </mapper>

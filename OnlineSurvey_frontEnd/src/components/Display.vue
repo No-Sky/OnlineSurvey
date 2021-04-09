@@ -57,10 +57,15 @@
 </template>
 <script>
 import { onMounted, reactive, ref } from "vue";
-import { getQuestionnaireById, addAnswer, getQuestionList } from "./api";
+import {
+  getQuestionnaireById,
+  addAnswer,
+  getQuestionList,
+  addUserTag,
+} from "./api";
 import { ElMessage } from "element-plus";
 import { useRoute, useRouter } from "vue-router";
-import qs from 'qs'
+import qs from "qs";
 export default {
   name: "Display",
   setup() {
@@ -71,43 +76,69 @@ export default {
     const wjId = ref(0);
     const title = ref("");
     const desc = ref("");
-    const detail = reactive({questions: []});
+    const detail = reactive({ questions: [] });
     const startTimestamp = ref(0); //填写问卷开始时间戳 毫秒
     const submitLoading = ref(false); //提交按钮 加载中状态
     const submitText = ref("提交"); //提交按钮文字
-    const checkboxValue =  ([])
+    const checkboxValue = ref([]);
     const route = useRoute();
     const router = useRouter();
+
+    const userRelationTags = (tags) => {
+      let user_data = JSON.parse(sessionStorage.getItem("User_Data"));
+      if (user_data == null || user_data == undefined) return;
+      for (let i = 0; i < tags.length; i++) {
+        let data = {
+          userId: user_data.userId,
+          tagId: tags[i].tagId,
+        };
+        addUserTag(qs.stringify(data))
+          .then((res) => {
+            let data = res.data;
+            if (data.code == 1) {
+              console.log("关联标签成功");
+            } else {
+              console.log("关联标签失败");
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    };
 
     onMounted(() => {
       wjId.value = route.params.id;
       getQuestionnaireById({
         params: {
-          "questionnaireId": wjId.value,
-        }}).then((res) => {
-          let data = res.data;
-          // console.log(data);
-          if (data.code == 1) {
-            title.value = data.data.title;
-            desc.value = data.data.description;
-             getQuestionList({ params: { questionnaireId: wjId.value} }).then((res) => {
-                let data = res.data;
-                console.log(data);
-                data.data.forEach(question => {
-                  if (question.questionType == 2) {
-                    question.checkboxValue= []
-                  }
-                  detail.questions.push(question)
-                })
-              })
-              .catch((error) => {
-                if (error) {
-                  ElMessage.error("网络错误，请重试！");
+          questionnaireId: wjId.value,
+        },
+      }).then((res) => {
+        let data = res.data;
+        // console.log(data);
+        if (data.code == 1) {
+          title.value = data.data.title;
+          desc.value = data.data.description;
+          getQuestionList({ params: { questionnaireId: wjId.value } })
+            .then((res) => {
+              let data = res.data;
+              // console.log(data);
+              userRelationTags(data.data.tags);
+              data.data.forEach((question) => {
+                if (question.questionType == 2) {
+                  question.checkboxValue = [];
                 }
+                detail.questions.push(question);
               });
-          } else {
-            ElMessage.error(data.description);
-          }
+            })
+            .catch((error) => {
+              if (error) {
+                ElMessage.error("网络错误，请重试！");
+              }
+            });
+        } else {
+          ElMessage.error(data.description);
+        }
       });
       startTimestamp.value = new Date().getTime(); //时间戳 毫秒
     });
@@ -122,19 +153,25 @@ export default {
 
       for (let index = 0; index < detail.questions.length; index++) {
         let question = detail.questions[index];
-        if (question.required  == 1) {
-          if (question.radioValue == null || question.checkboxValue == null || question.textValue == "")
-            ElMessage.warning("还有必填项目未填写！");
+        if (question.required == 1) {
+          if (
+            (question.questionType == 1 && question.radioValue == null) ||
+            (question.questionType == 2 && question.checkboxValue.length < 0) ||
+            (question.questionType == 3 && question.textValue == null)
+          ) {
+            submitText.value = "提交";
             submitLoading.value = false;
+            ElMessage.warning("还有必填项目未填写！");
             return false;
+          }
         }
       }
 
       let answerData = {
-        "questionnaireId": parseInt(wjId.value),
-        "questions": detail.questions,
-        "useTime": useTime,
-      }
+        questionnaireId: parseInt(wjId.value),
+        questions: detail.questions,
+        useTime: useTime,
+      };
       addAnswer({
         url: "http://localhost:10001/answer",
         method: "POST",
@@ -156,7 +193,7 @@ export default {
           submitText.value = "提交";
           ElMessage.error(data.description);
         }
-      })
+      });
     };
 
     return {

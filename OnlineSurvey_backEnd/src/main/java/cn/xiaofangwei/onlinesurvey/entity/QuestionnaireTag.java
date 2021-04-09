@@ -1,6 +1,7 @@
 package cn.xiaofangwei.onlinesurvey.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -23,5 +24,14 @@ public class QuestionnaireTag {
     @TableId(value = "qtId", type = IdType.AUTO)
     private Integer qtId;
 
+    @TableField(value = "questionnaireId")
     private Integer questionnaireId;
+
+    @TableField(value = "tagId")
+    private Integer tagId;
+
+    @TableField(exist = false)
+    private String name;
+
+//    private Tag tag;
 }

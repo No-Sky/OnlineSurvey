@@ -26,7 +26,7 @@ import java.util.Map;
  * @since 2021-02-06
  */
 @Service
-@Transactional
+@Transactional(rollbackFor=Exception.class)
 public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Questionnaire> implements QuestionnaireService {
 
     @Resource
@@ -41,13 +41,7 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
     @Override
     public IPage<Map<String, Object>> selectMapsPage(Page questionnairePage, QueryWrapper wrapper) {
         questionnairePage.setOptimizeCountSql(true);
-        IPage mapIPage = questionnaireMapper.selectPageVo(questionnairePage);
-//        List<Questionnaire> questionnaireList = (List<Questionnaire>) mapIPage.getRecords();
-//        questionnaireList.forEach(questionnaire -> {
-//            User user = userMapper.selectById(questionnaire.getUserId());
-//            questionnaire.setUser(user);
-//        });
-//        mapIPage.setRecords(questionnaireList);
+        IPage mapIPage = questionnaireMapper.selectPageVo(questionnairePage, wrapper);
         return mapIPage;
     }
 
@@ -57,5 +51,10 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
 //        List<Question> questions = questionMapper.selectQuestionsWithOptions(questionnaireId);
 //        questionnaire.setQuestions(questions);
         return questionnaire;
+    }
+
+    @Override
+    public List<Questionnaire> selectQuestionnaireWithTagsByUser(Integer userId) {
+        return questionnaireMapper.selectQuestionnaireWithTagsByUser(userId);
     }
 }
