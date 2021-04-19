@@ -23,5 +23,5 @@ public interface QuestionnaireService extends IService<Questionnaire> {
 
     Questionnaire selectQuestionnaireWithQuestion(Integer questionnaireId);
 
-    List<Questionnaire> selectQuestionnaireWithTagsByUser(Integer userId);
+    List<Questionnaire> selectQuestionnairesWithTagsByUser(Integer userId);
 }

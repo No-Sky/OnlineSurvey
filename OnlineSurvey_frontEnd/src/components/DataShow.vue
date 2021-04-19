@@ -120,14 +120,14 @@
           @click="lookTextDetail(item.questionId)"
           >详细内容</el-button
         >
-        <el-button
+        <!-- <el-button
           size="mini"
           type="primary"
           plain
           @click="answerText2Excel(item.questionId)"
           :loading="item.questionId == answerText2ExcelQeustionId"
           >导出excel</el-button
-        >
+        > -->
       </div>
     </el-card>
     <el-dialog title="详细内容" v-model="dialogTableVisible">

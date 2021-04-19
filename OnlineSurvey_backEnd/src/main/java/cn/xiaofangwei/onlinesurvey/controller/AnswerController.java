@@ -4,20 +4,11 @@ package cn.xiaofangwei.onlinesurvey.controller;
 import cn.xiaofangwei.onlinesurvey.entity.*;
 import cn.xiaofangwei.onlinesurvey.entity.vo.AnswerVo;
 import cn.xiaofangwei.onlinesurvey.entity.vo.DataAnalysis;
-import cn.xiaofangwei.onlinesurvey.service.AnswerService;
-import cn.xiaofangwei.onlinesurvey.service.QuestionnaireService;
-import cn.xiaofangwei.onlinesurvey.service.UserScoreService;
-import cn.xiaofangwei.onlinesurvey.service.UserService;
+import cn.xiaofangwei.onlinesurvey.service.*;
 import cn.xiaofangwei.onlinesurvey.utils.ExcelUtil;
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.support.ExcelTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.sun.deploy.net.HttpResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -26,8 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -50,13 +39,17 @@ public class AnswerController {
     private final QuestionnaireService questionnaireService;
     private final UserService userService;
     private final UserScoreService userScoreService;
+    private final SubmitInfoService submitInfoService;
+    private final QuestionService questionService;
 
     @Autowired
-    public AnswerController(AnswerService answerService, QuestionnaireService questionnaireService, UserService userService, UserScoreService userScoreService) {
+    public AnswerController(AnswerService answerService, QuestionnaireService questionnaireService, UserService userService, UserScoreService userScoreService, SubmitInfoService submitInfoService, QuestionService questionService) {
         this.answerService = answerService;
         this.questionnaireService = questionnaireService;
         this.userService = userService;
         this.userScoreService = userScoreService;
+        this.submitInfoService = submitInfoService;
+        this.questionService = questionService;
     }
 
     @GetMapping
@@ -93,8 +86,8 @@ public class AnswerController {
         if (questionnaire.getStopTime() != null && LocalDateTime.now().isAfter(questionnaire.getStopTime()))
             return Message.error("截止时间已过，已无法提交问卷！");
         QueryWrapper<Answer> wrapper = new QueryWrapper<>();
-        wrapper.eq("questionaireId", questionnaire.getQuestionnaireId());
-        if (questionnaire.getDistribution() != 0 && questionnaire.getDistribution() > answerService.count(wrapper))
+        wrapper.eq("questionnaireId", questionnaire.getQuestionnaireId());
+        if (questionnaire.getDistribution() != 0 && questionnaire.getDistribution() <= answerService.count(wrapper))
             return Message.error("已超过问卷回收份数，无法提交问卷！");
         User user = (User) session.getAttribute("user");
         if (user != null) {
@@ -110,7 +103,11 @@ public class AnswerController {
         Integer useTime = answerVo.getUseTime();
         List<Question> questions = answerVo.getQuestions();
         String ip = request.getRemoteAddr();
-        answerService.saveAnswers(questionnaireId, questions, useTime, ip);
+        QueryWrapper<SubmitInfo> wrapper1 = new QueryWrapper<>();
+        wrapper1.eq("questionnaireId", answerVo.getQuestionnaireId());
+        wrapper1.eq("submitIp", ip);
+        if ( submitInfoService.getOne(wrapper1) != null ) return Message.error("您已回答过此问卷！");
+        answerService.saveAnswers(questionnaireId, user.getUserId() == null ? 0 : user.getUserId(), questions, useTime, ip);
         return Message.info();
     }
 
@@ -142,5 +139,11 @@ public class AnswerController {
 
         wb.write(out);
         wb.close();
+    }
+
+    @GetMapping("/detail")
+    public Message getAnswerDetail(@RequestParam("questionnaireId")Integer questionnaireId, @RequestParam("userId")Integer userId) throws SQLException {
+        List<Question> questions = questionService.selectQuestionWithOptionsWithAnswer(questionnaireId, userId);
+        return Message.info(questions);
     }
 }

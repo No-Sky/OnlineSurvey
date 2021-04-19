@@ -2,7 +2,6 @@ package cn.xiaofangwei.onlinesurvey.service.impl;
 
 import cn.xiaofangwei.onlinesurvey.entity.Answer;
 import cn.xiaofangwei.onlinesurvey.entity.Question;
-import cn.xiaofangwei.onlinesurvey.entity.Questionnaire;
 import cn.xiaofangwei.onlinesurvey.entity.SubmitInfo;
 import cn.xiaofangwei.onlinesurvey.entity.vo.AnalysisSelectView;
 import cn.xiaofangwei.onlinesurvey.entity.vo.DataAnalysis;
@@ -25,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * <p>
@@ -48,10 +46,11 @@ public class AnswerServiceImpl extends ServiceImpl<AnswerMapper, Answer> impleme
 
 
     @Override
-    public void saveAnswers(Integer questionnaireId, List<Question> questions, Integer useTime, String ip) throws SQLException {
-        System.out.println(questions.toString());
-        System.out.println(useTime);
+    public void saveAnswers(Integer userId, Integer questionnaireId, List<Question> questions, Integer useTime, String ip) throws SQLException {
+//        System.out.println(questions.toString());
+//        System.out.println(useTime);
         SubmitInfo submitInfo = new SubmitInfo();
+        submitInfo.setUserId(userId);
         submitInfo.setQuestionnaireId(questionnaireId);
         submitInfo.setUseTime(useTime);
         submitInfo.setSubmitIP(ip);

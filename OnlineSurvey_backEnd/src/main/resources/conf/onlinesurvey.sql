@@ -16,7 +16,7 @@ create table `User` (
     `score` int default 0
 );
 insert into `User` (`email`, `password`, `username`) values ('xfw_nosky@163.com', 'test123456', 'xfw');
-#insert into `User` (`email`, `password`, `username`) values ('xfw.nosky@outlook.com', 'test123456', 'test001');
+insert into `User` (`email`, `password`, `username`) values ('xfw.nosky@outlook.com', 'test123456', 'test001');
 
 
 drop table if exists `User_Score`;
@@ -109,8 +109,11 @@ create table `Questionnaire_Tag` (
     `tagId` int
 );
 
+select * from `User`;
 select * from `User_Tag`;
+select * from `SubmitInfo`;
 select * from `Questionnaire`;
+select * from `Questionnaire_Tag`;
 
 select A.optionId,count(B.submitId) as submitCount,A.content 
 	from (select * from `Option` where questionId = 1) A 

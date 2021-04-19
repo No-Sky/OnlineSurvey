@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public interface AnswerService extends IService<Answer> {
 
-    void saveAnswers(Integer questionnaireId, List<Question> questions, Integer useTime, String ip) throws SQLException;
+    void saveAnswers(Integer userId, Integer questionnaireId, List<Question> questions, Integer useTime, String ip) throws SQLException;
 
     List<DataAnalysis> getDataAnalysis(Integer questionnaireId);
 

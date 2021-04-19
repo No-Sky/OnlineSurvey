@@ -30,6 +30,6 @@ public class SubmitInfoServiceImpl extends ServiceImpl<SubmitInfoMapper, SubmitI
 
     @Override
     public IPage<Map<String, Object>> selectMapsPage(Page submitInfoPage, QueryWrapper queryWrapper) {
-        return submitInfoMapper.selectMapsPage(submitInfoPage, queryWrapper);
+        return submitInfoMapper.selectPageVo(submitInfoPage, queryWrapper);
     }
 }

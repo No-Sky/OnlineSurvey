@@ -37,11 +37,20 @@ public interface QuestionnaireMapper extends BaseMapper<Questionnaire> {
     IPage<Questionnaire> selectPageVo(@Param("page") Page<Questionnaire> page,  @Param(Constants.WRAPPER) QueryWrapper wrapper);
 
     @Select("select Questionnaire.* from Questionnaire where `userId` = #{userId}")
+    @Results(id = "QuestionnairesWithTagsMap", value = {
+            @Result(property = "questionnaireId", column = "questionnaireId"),
+            @Result(property = "tags", javaType = List.class, column = "questionnaireId",
+                    many = @Many(
+                            select = "cn.xiaofangwei.onlinesurvey.mapper.QuestionnaireTagMapper.selectTagsByQuestionnaire"))
+    })
+    List<Questionnaire> selectQuestionnairesWithTagsByUser(@Param("userId") Integer userId);
+
+    @Select("select Questionnaire.* from Questionnaire where `questionnaireId` = #{questionnaireId}")
     @Results(id = "QuestionnaireWithTagsMap", value = {
             @Result(property = "questionnaireId", column = "questionnaireId"),
             @Result(property = "tags", javaType = List.class, column = "questionnaireId",
                     many = @Many(
                             select = "cn.xiaofangwei.onlinesurvey.mapper.QuestionnaireTagMapper.selectTagsByQuestionnaire"))
     })
-    List<Questionnaire> selectQuestionnaireWithTagsByUser(@Param("userId") Integer userId);
+    Questionnaire selectQuestionnaireWithTags(@Param("questionnaireId") Integer questionnaireId);
 }

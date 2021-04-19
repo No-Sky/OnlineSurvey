@@ -21,4 +21,5 @@ public interface QuestionService extends IService<Question> {
 
     List<Question> selectQuestionsWithOptions(Integer questionnaireId);
 
+    List<Question> selectQuestionWithOptionsWithAnswer(Integer questionnaireId, Integer userId);
 }

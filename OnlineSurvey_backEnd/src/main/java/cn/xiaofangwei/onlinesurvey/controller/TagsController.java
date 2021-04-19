@@ -44,7 +44,7 @@ public class TagsController {
     @PostMapping("/ut")
     public Message addTagbyUser(UserTag userTag) throws SQLException {
         Tag newTag = new Tag();
-        System.out.println(userTag);
+//        System.out.println(userTag);
         if (userTag.getTagId() == null) {
             newTag.setName(userTag.getName());
             QueryWrapper<Tag> wrapper = new QueryWrapper<>();
@@ -63,7 +63,7 @@ public class TagsController {
         queryWrapper.eq("tagId", newTag.getTagId());
         UserTag userTag1 = userTagService.getOne(queryWrapper);
         if (userTag1 != null) {
-            userTag1.setValue(userTag1.getValue());
+            userTag1.setValue(userTag1.getValue()+1);
             userTagService.updateById(userTag1);
             return Message.info(2,"标签已存在");
         }

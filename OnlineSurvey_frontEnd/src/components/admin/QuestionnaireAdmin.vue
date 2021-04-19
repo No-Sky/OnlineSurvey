@@ -54,10 +54,15 @@
           </el-form-item>
           <el-form-item class="tags" label="标签">
             <span v-if="props.row.tags == null">暂无标签</span>
-            <el-tag v-for="tag in props.row.tags" :key="tag">{{ tag.name }}</el-tag>
+            <el-tag v-for="tag in props.row.tags" :key="tag">{{
+              tag.name
+            }}</el-tag>
           </el-form-item>
           <el-form-item label="描述">
             <span>{{ props.row.description }}</span>
+          </el-form-item>
+          <el-form-item label="操作">
+            <el-button @click="handleQuestionnaireDetail(props.row)">查看内容</el-button>
           </el-form-item>
         </el-form>
       </template>
@@ -114,6 +119,23 @@
       >
     </div>
   </el-dialog>
+
+
+<el-dialog
+  :title="questionnaireDetail.attrs.title"
+  v-model="centerDialogVisible"
+  width="80%"
+  center>
+     <data-show :questionnaire="questionnaireDetail.attrs"></data-show>
+     
+  <template #footer>
+    <span class="dialog-footer">
+      <el-button @click="centerDialogVisible = false">关闭</el-button>
+    </span>
+  </template>
+
+</el-dialog>
+
 </template>
 
 <script>
@@ -125,7 +147,11 @@ import {
 } from "../api.js";
 import { ElMessage, ElMessageBox } from "element-plus";
 import qs from "qs";
+import DataShow from '../DataShow.vue'
 export default {
+  components: {
+    DataShow,
+  },
   setup() {
     const tableData = reactive({ attrs: [] });
     const search = ref("");
@@ -181,7 +207,7 @@ export default {
           _method: "DELETE",
           params: { questionnaireId: row.questionnaireId },
         };
-        console.log(deleteData)
+        console.log(deleteData);
         deleteQuestionnaire(deleteData)
           .then((res) => {
             let data = res.data;
@@ -226,7 +252,23 @@ export default {
       local_getUserList(value);
     };
 
+
+    const centerDialogVisible = ref(false);
+    const questionnaireDetail = reactive({
+      attrs: {}
+    });
+
+    const handleQuestionnaireDetail = (row) => {
+      console.log(row);
+      questionnaireDetail.attrs = row;
+      centerDialogVisible.value = true;
+
+    }
+
     return {
+      centerDialogVisible,
+      handleQuestionnaireDetail,
+      questionnaireDetail,
       tableData,
       search,
       pages,
@@ -244,7 +286,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .demo-table-expand {
   font-size: 0;
 }
@@ -259,5 +301,8 @@ export default {
 }
 .tags {
   width: inherit;
+}
+.tags .el-form-item__content {
+  width: 80%;
 }
 </style>

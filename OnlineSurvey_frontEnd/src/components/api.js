@@ -121,6 +121,10 @@ export const analysisExportExcel = data => {
     return axios(data);
 }
 
+export const getAnswerDetail= data => {
+    return axios.get(base_url + '/answer/detail', data);
+}
+
 /** Tags API */
 export const deleteQuestionnaireTag = data => {
     return axios.delete(base_url + '/tags/qt', data)
@@ -136,4 +140,9 @@ export const addUserTag = data => {
 
 export const deleteUserTag = data => {
     return axios.delete(base_url + '/tags/ut', data)
+}
+
+/** SubmitInfo API */
+export const getUserSubmitInfoRecords = data => {
+    return axios.get(base_url + '/submit-info/user', data)
 }

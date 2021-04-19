@@ -119,11 +119,11 @@ export default {
         if (data.code == 1) {
           title.value = data.data.title;
           desc.value = data.data.description;
+          userRelationTags(data.data.tags);
           getQuestionList({ params: { questionnaireId: wjId.value } })
             .then((res) => {
               let data = res.data;
               // console.log(data);
-              userRelationTags(data.data.tags);
               data.data.forEach((question) => {
                 if (question.questionType == 2) {
                   question.checkboxValue = [];
@@ -133,6 +133,7 @@ export default {
             })
             .catch((error) => {
               if (error) {
+                console.log(error)
                 ElMessage.error("网络错误，请重试！");
               }
             });

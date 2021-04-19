@@ -352,53 +352,61 @@ export default {
       willAddWj.value.tags = [];
     };
 
+    const addOrUpdateQuestionnaire = () => {
+      if (willAddWj.value.title == "") {
+        ElMessage.error("标题不能为空");
+        return;
+      }
+      let questionnaireData = {
+        userId: willAddWj.value.userId,
+        questionnaireId: willAddWj.value.questionnaireId,
+        title: willAddWj.value.title,
+        description: willAddWj.value.description,
+        statusType: willAddWj.value.statusType,
+        createTime: Date.now,
+        stopTime: willAddWj.value.stopTime,
+        distribution: willAddWj.value.distribution,
+        isPublic: willAddWj.value.isPublic,
+        tags: willAddWj.value.tags,
+      };
+      addQuestionnaire({
+        url: "http://localhost:10001/questionnaire",
+        method: "POST",
+        data: JSON.stringify(questionnaireData),
+        dataType: "json",
+        headers: {
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+      })
+        .then((res) => {
+          let data = res.data;
+          // console.log(data);
+          if (data.code == 1) {
+            ElMessage.success("保存成功");
+            getWjList();
+          } else {
+            ElMessage.error(data.description);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      dialogShow.value = false;
+    };
+
     //添加问卷
     const addWj = () => {
-      ElMessageBox.confirm("创建问卷将扣除2积分，是否继续", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      }).then(() => {
-        if (willAddWj.value.title == "") {
-          ElMessage.error("标题不能为空");
-          return;
-        }
-        let questionnaireData = {
-          userId: willAddWj.value.userId,
-          questionnaireId: willAddWj.value.questionnaireId,
-          title: willAddWj.value.title,
-          description: willAddWj.value.description,
-          statusType: willAddWj.value.statusType,
-          createTime: Date.now,
-          stopTime: willAddWj.value.stopTime,
-          distribution: willAddWj.value.distribution,
-          isPublic: willAddWj.value.isPublic,
-          tags: willAddWj.value.tags,
-        };
-        addQuestionnaire({
-          url: "http://localhost:10001/questionnaire",
-          method: "POST",
-          data: JSON.stringify(questionnaireData),
-          dataType: "json",
-          headers: {
-            "Content-Type": "application/json;charset=UTF-8",
-          },
-        })
-          .then((res) => {
-            let data = res.data;
-            // console.log(data);
-            if (data.code == 1) {
-              ElMessage.success("保存成功");
-              getWjList();
-            } else {
-              ElMessage.error(data.description);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-        dialogShow.value = false;
-      });
+      if (willAddWj.value.questionnaireId != 0) {
+        addOrUpdateQuestionnaire();
+      } else {
+        ElMessageBox.confirm("创建问卷将扣除2积分，是否继续", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }).then(() => {
+          addOrUpdateQuestionnaire();
+        });
+      }
     };
 
     //发布问卷

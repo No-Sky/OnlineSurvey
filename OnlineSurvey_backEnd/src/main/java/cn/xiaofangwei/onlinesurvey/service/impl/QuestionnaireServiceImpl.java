@@ -54,7 +54,7 @@ public class QuestionnaireServiceImpl extends ServiceImpl<QuestionnaireMapper, Q
     }
 
     @Override
-    public List<Questionnaire> selectQuestionnaireWithTagsByUser(Integer userId) {
-        return questionnaireMapper.selectQuestionnaireWithTagsByUser(userId);
+    public List<Questionnaire> selectQuestionnairesWithTagsByUser(Integer userId) {
+        return questionnaireMapper.selectQuestionnairesWithTagsByUser(userId);
     }
 }

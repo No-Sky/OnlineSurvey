@@ -153,7 +153,7 @@ export default {
       },
       {
         value: "text",
-        label: "填空题",
+        label: "问答题",
       },
     ]);
     const checkboxValue = ref([])

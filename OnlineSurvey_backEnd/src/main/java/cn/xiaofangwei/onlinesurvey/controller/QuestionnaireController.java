@@ -66,7 +66,7 @@ public class QuestionnaireController {
 
     @GetMapping("/user")
     public Message getQuestionnaireListByUser(@RequestParam("userId")Integer userId) throws SQLException {
-        List<Questionnaire> questionnaireList = questionnaireService.selectQuestionnaireWithTagsByUser(userId);
+        List<Questionnaire> questionnaireList = questionnaireService.selectQuestionnairesWithTagsByUser(userId);
         return Message.info(questionnaireList);
     }
 

@@ -40,8 +40,8 @@ public class SubmitInfoController {
         return Message.info(submitInfo);
     }
 
-    @GetMapping("/user/{page}")
-    public Message getSubmitInfoListByUser(@RequestParam("userId")Integer userId, @PathVariable("page")Integer page) throws SQLException {
+    @GetMapping("/user")
+    public Message getSubmitInfoListByUser(@RequestParam("userId")Integer userId, @RequestParam("page")Integer page) throws SQLException {
         QueryWrapper<SubmitInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userId", userId);
         //分页序列，1：页面号，2：大小
@@ -54,7 +54,7 @@ public class SubmitInfoController {
         return Message.info("页面获取成功", result);
     }
 
-    @GetMapping("/questionnaire/{page}")
+    @GetMapping("/questionnaire")
     public Message getSubmitInfoListByQuestionnaire(@RequestParam("questionnaireId")Integer questionnaireId, @PathVariable("page")Integer page) throws SQLException {
         QueryWrapper<SubmitInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("questionnaireId", questionnaireId);

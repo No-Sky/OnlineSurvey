@@ -42,5 +42,8 @@ public class SubmitInfo implements Serializable {
     @TableField("useTime")
     private Integer useTime;
 
+    @TableField(exist = false)
+    private Questionnaire questionnaire;
+
 
 }

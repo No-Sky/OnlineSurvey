@@ -24,6 +24,12 @@
         >
           <span>积分信息</span>
         </div>
+        <div
+          @click="changeView('questionnaire-info')"
+          :class="changeId == 3 ? 'item is-active' : 'item'"
+        >
+          <span>我参与的问卷</span>
+        </div>
       </div>
     </el-card>
     <el-card id="main-right" shadow="always">
@@ -76,8 +82,11 @@
       </div>
       <div id="tags-info">
         <div class="main-right-header">标签信息</div>
-        <!-- <el-button @click="wordCloudView">显示标签云</el-button> -->
-        <div ref="tagsChartRef" style="width: 500px; height: 400px"></div>
+        <div v-show="userTags.attrs.length <= 0">
+          暂无标签
+        </div>
+        <div v-show="userTags.attrs.length">
+          <div ref="tagsChartRef" style="width: 500px; height: 400px"></div>
         <div>
           <el-tag
             :key="tag"
@@ -88,7 +97,7 @@
           >
             {{ tag.name }}
           </el-tag>
-          <el-input
+          <!-- <el-input
             class="input-new-tag"
             v-if="inputVisible"
             v-model="inputValue"
@@ -105,7 +114,8 @@
             size="small"
             @click="showInput"
             >+ New Tag</el-button
-          >
+          > -->
+        </div>
         </div>
       </div>
       <div id="score-info">
@@ -140,8 +150,105 @@
           </div>
         </div>
       </div>
+      <div id="questionnaire-info">
+        <div class="main-right-header">我参与的问卷</div>
+        <el-table :data="questionnaireRecords.attrs" stripe style="width: 100%">
+          <el-table-column type="index" label="序号"></el-table-column>
+          <el-table-column
+            prop="submitTime"
+            label="回答时间"
+          >
+          </el-table-column>
+          <el-table-column prop="questionnaire.title" label="问卷">
+          </el-table-column>
+          <el-table-column fixed="right">
+            <template #header> 操作 </template>
+            <template #default="scope">
+              <el-button
+                size="mini"
+                @click="handleQuestionnaireAnswerDetail(scope.$index, scope.row)"
+                >查看回答</el-button
+              >
+              <el-button
+                size="mini"
+                @click="handleToPublicQuestoinnaire(scope.$index, scope.row)"
+                >查看公开问卷分析</el-button
+              >
+            </template>
+          </el-table-column>
+        </el-table>
+        <el-pagination
+          :hide-on-single-page="pages1 == 1"
+          background
+          :current-page="currentPage1"
+          @current-change="changePage1"
+          layout="prev, pager, next"
+          :total="total1"
+        >
+        </el-pagination>
+      </div>
     </el-card>
   </div>
+
+  <el-dialog
+  :title="questionnaireAnswerDetail.questionnaire.title"
+  v-model="centerDialogVisible"
+  width="80%"
+  center>
+      <div>
+        <el-card>
+          <div class="top" v-if="questionnaireAnswerDetail.questionnaire.description!=null">
+            {{questionnaireAnswerDetail.questionnaire.description}}
+          </div>
+        </el-card>
+       <el-card class="box-card" v-for="(item,index) in questionnaireAnswerDetail.attrs" :key="index">
+        <div slot: header class="clearfix">
+
+          <div class="questionTitle">
+            <!--显示必填标识-->
+            <span style="color: #F56C6C;">
+              <span v-if="item.required == 1 ? true : false">*</span>
+              <span v-else>&nbsp;</span>
+            </span>
+            {{(index+1)+'.'+item.questionTitle}}
+          </div>
+        </div>
+
+        <!--单选题展示-->
+        <div v-if="item.questionType==1">
+            <div class="text item" v-for="(optionItem, index) in item.options" :key="index">
+                <el-radio :disabled="true" v-model="item.radioValue" :label="optionItem.optionId" style="margin: 5px;">{{ optionItem.content }}</el-radio>
+            </div>
+        </div>
+        
+
+        <!--多选题展示-->
+        <el-checkbox-group readonly v-if="item.questionType==2" v-model="item.checkboxValue">
+          <div class="text item"  v-for="(optionItem, index) in item.options" :key="index">
+            <el-checkbox :disabled="true" :label="optionItem.optionId" style="margin: 5px;">{{ optionItem.content }}</el-checkbox>
+          </div>
+        </el-checkbox-group>
+
+        <!--填空题展示-->
+        <el-input
+          v-if="item.questionType==3"
+          type="textarea"
+          :readonly="true"
+          :rows="item.row"
+          v-model="item.textValue"
+          resize="none">
+        </el-input>
+
+      </el-card>
+      </div>
+     
+  <template #footer>
+    <span class="dialog-footer">
+      <el-button @click="centerDialogVisible = false">关闭</el-button>
+    </span>
+  </template>
+
+</el-dialog>
 </template>
 
 <script>
@@ -158,9 +265,10 @@ import {
   addUserTag,
   deleteUserTag,
   getUserScoreRecords,
+  getUserSubmitInfoRecords,
+  getAnswerDetail,
 } from "./api.js";
 import qs from "qs";
-import { FormatDate } from "../filters/index.js";
 
 export default {
   setup() {
@@ -213,7 +321,14 @@ export default {
     const inputValue = ref("");
     const saveTagInput = ref(null);
 
+    const pages1 = ref(0);
+    const total1 = ref(0);
+    const currentPage1 = ref(1);
     const scoreRecords = reactive({
+      attrs: [],
+    });
+
+    const questionnaireRecords = reactive({
       attrs: [],
     });
 
@@ -221,6 +336,26 @@ export default {
       let _obj = JSON.stringify(obj);
       let objClone = JSON.parse(_obj);
       return objClone;
+    };
+
+    const local_getUserSubmitInfoRecords = (userId) => {
+      getUserSubmitInfoRecords({
+        params: { userId: userId, page: currentPage1.value },
+      }).then((res) => {
+        let data = res.data;
+        console.log(data);
+        if (data.code == 1) {
+          questionnaireRecords.attrs = data.data.records;
+          pages1.value = data.data.pages;
+          total1.value = data.data.total;
+        }
+      });
+    };
+
+    const changePage1 = (value) => {
+      //远程获取
+      currentPage1.value = value;
+      local_getUserSubmitInfoRecords(baseInfo.attrs.userId);
     };
 
     const getUserInfo = (userId) => {
@@ -319,14 +454,17 @@ export default {
       getUserInfo(userId);
       local_getUserTags(userId);
       local_getUserScoreRecords(userId);
+      local_getUserSubmitInfoRecords(userId);
     });
 
     const changeView = (id) => {
       const baseInfo = document.getElementById("base-info");
       const tagsInfo = document.getElementById("tags-info");
       const scoreInfo = document.getElementById("score-info");
+      const questionnaireInfo = document.getElementById("questionnaire-info");
       if (id == "base-info") {
         changeId.value = 0;
+        questionnaireInfo.style.display = "none";
         baseInfo.style.display = "block";
         tagsInfo.style.display = "none";
         scoreInfo.style.display = "none";
@@ -334,12 +472,20 @@ export default {
         changeId.value = 1;
         baseInfo.style.display = "none";
         tagsInfo.style.display = "block";
+        questionnaireInfo.style.display = "none";
         scoreInfo.style.display = "none";
       } else if (id == "score-info") {
         changeId.value = 2;
         baseInfo.style.display = "none";
         tagsInfo.style.display = "none";
+        questionnaireInfo.style.display = "none";
         scoreInfo.style.display = "block";
+      } else if (id == "questionnaire-info") {
+        changeId.value = 3;
+        baseInfo.style.display = "none";
+        tagsInfo.style.display = "none";
+        scoreInfo.style.display = "none";
+        questionnaireInfo.style.display = "block";
       }
     };
 
@@ -371,7 +517,9 @@ export default {
             // console.log(data);
             if (data.code == 1) {
               ElMessage.success("修改成功！");
-              let user_session = JSON.parse(sessionStorage.getItem("User_Data"));
+              let user_session = JSON.parse(
+                sessionStorage.getItem("User_Data")
+              );
               user_session.avatar = avatarsList.value[avatarIndex.value];
               sessionStorage.setItem("User_Data", JSON.stringify(user_session));
               location.reload();
@@ -491,7 +639,7 @@ export default {
         });
     };
 
-    const local_getUserScoreRecords = (userId, page) => {
+    const local_getUserScoreRecords = (userId) => {
       getUserScoreRecords({
         params: { userId: userId, page: currentPage.value },
       }).then((res) => {
@@ -507,10 +655,50 @@ export default {
 
     const optionTimeFormat = (row, cellValue) => {
       // console.log(row.optionTime);
-      return row.optionTime.substring(0, row.optionTime.lastIndexOf(':', row.optionTime.lastIndexOf(':')-1));
+      return row.optionTime.substring(
+        0,
+        row.optionTime.lastIndexOf(":", row.optionTime.lastIndexOf(":") - 1)
+      );
     };
 
+    const centerDialogVisible = ref(false);
+    const questionnaireAnswerDetail = reactive({
+      questionnaire: {},
+      attrs: {},
+    });
+    const handleQuestionnaireAnswerDetail = (index, row) => {
+      console.log(index, row);
+      let data = {
+        params: {
+          questionnaireId: row.questionnaireId,
+          userId: row.userId,
+        },
+      };
+      getAnswerDetail(data).then((res) => {
+        let data = res.data;
+        console.log(data);
+        if (data.code == 1) {
+          questionnaireAnswerDetail.questionnaire = row.questionnaire;
+          questionnaireAnswerDetail.attrs = data.data;
+          centerDialogVisible.value = true;
+        }
+      });
+    };
+
+    const handleToPublicQuestoinnaire = (index, row) => {
+      if (row.questionnaire.isPublic) {
+        router.push("/detail/"+row.questionnaireId)
+      } else {
+        ElMessage.success("该问卷未被公开，无法查看分析！");
+      }
+      
+    }
+
     return {
+      centerDialogVisible,
+      questionnaireAnswerDetail,
+      handleQuestionnaireAnswerDetail,
+      handleToPublicQuestoinnaire,
       userInfo,
       baseInfo,
       changeId,
@@ -534,6 +722,11 @@ export default {
       showInput,
       saveTagInput,
       optionTimeFormat,
+      questionnaireRecords,
+      pages1,
+      currentPage1,
+      total1,
+      changePage1,
     };
   },
 };
@@ -602,6 +795,9 @@ export default {
 #main-right #score-info {
   display: none;
 }
+#main-right #questionnaire-info {
+  display: none;
+}
 .main-right-header {
   font-size: 24px;
   margin-bottom: 2%;
@@ -644,4 +840,23 @@ export default {
   margin-left: 10px;
   vertical-align: bottom;
 } */
+.top {
+  color: #606266;
+  padding: 0 10px 10px 10px;
+  border-bottom: 3px solid #409eff;
+  font-size: 15px;
+  line-height: 22px;
+  text-align: left;
+}
+.content {
+  width: 100%;
+  max-width: 800px;
+  display: inline-block;
+  text-align: center;
+}
+.box-card {
+  text-align: left;
+  width: 100%;
+  margin: 10px 0 10px 0;
+}
 </style>
